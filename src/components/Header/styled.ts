@@ -15,7 +15,7 @@ export const Wrapper = styled.div`
   z-index: 100;
 
   @media ${MOBILE_MEDIA_QUERY} {
-    padding: 0 15px;
+    padding: 0 24px;
   }
 `;
 
@@ -25,7 +25,6 @@ export const Header = styled.div`
   justify-content: space-between;
   width: 100%;
   max-width: ${contentMaxWidth};
-  font-family: GmarketSansBold;
 
   .mobile-logo {
     @media ${MOBILE_MEDIA_QUERY} {
@@ -47,24 +46,22 @@ export const Header = styled.div`
 
 export const Menu = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 24px;
   align-items: center;
 `;
 
-export const MenuLink = styled(Link)<{ isselected: string }>`
-  font-size: 17px;
+export const HomeLink = styled(Link)`
+  font-family: GmarketSansBold;
+  font-size: 18px;
   ${({ theme }) => hoverEffect(theme)};
-  &:after {
-    height: 2px;
-    bottom: -2px;
-    transform: ${({ isselected }) => (isselected === 'true' ? 'scaleX(1)' : 'scaleX(0)')};
+  @media ${MOBILE_MEDIA_QUERY} {
+    font-size: 13px;
   }
+`;
 
-  &:hover:after {
-    @media ${MOBILE_MEDIA_QUERY} {
-      transform: ${({ isselected }) => (isselected === 'true' ? 'scaleX(1)' : 'scaleX(0)')};
-    }
-  }
+export const MenuLink = styled(Link)`
+  font-size: 16px;
+  ${({ theme }) => hoverEffect(theme)};
 
   @media ${MOBILE_MEDIA_QUERY} {
     font-size: 13px;
