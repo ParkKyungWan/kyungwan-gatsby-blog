@@ -25,7 +25,7 @@ const Seo: React.FC<SeoProps> = ({ description, title }) => {
   );
 
   const metaDescription = description || site.siteMetadata.description;
-  const ogImageUrl = `${site.siteMetadata.siteUrl}og-image.png`;
+  const ogImageUrl = `${site.siteMetadata.siteUrl}/og-image.png`;
 
   return (
     <Helmet

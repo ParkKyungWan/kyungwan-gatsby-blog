@@ -5,5 +5,5 @@ export default {
   title: `Park KyungWan`,
   description: `KyungWan's Blog`,
   language: `ko`,
-  siteUrl: `https://ruddhks.my/`,
+  siteUrl: `https://ruddhks.my`,
 };

@@ -104,8 +104,8 @@ const config: GatsbyConfig = {
     {
       resolve: 'gatsby-plugin-robots-txt',
       options: {
-        host: 'https://jeong-min.com/',
-        sitemap: 'https://jeong-min.com/sitemap.xml',
+        host: 'https://ruddhks.my/',
+        sitemap: 'https://ruddhks.my/sitemap/sitemap-index.xml',
         policy: [{ userAgent: '*', allow: '/' }],
       },
     },
