@@ -25,6 +25,7 @@ const Seo: React.FC<SeoProps> = ({ description, title }) => {
   );
 
   const metaDescription = description || site.siteMetadata.description;
+  const ogImageUrl = `${site.siteMetadata.siteUrl}og-image.png`;
 
   return (
     <Helmet
@@ -55,6 +56,26 @@ const Seo: React.FC<SeoProps> = ({ description, title }) => {
         {
           property: `og:type`,
           content: `website`,
+        },
+        {
+          property: `og:image`,
+          content: ogImageUrl,
+        },
+        {
+          name: `twitter:card`,
+          content: `summary_large_image`,
+        },
+        {
+          name: `twitter:title`,
+          content: title,
+        },
+        {
+          name: `twitter:description`,
+          content: metaDescription,
+        },
+        {
+          name: `twitter:image`,
+          content: ogImageUrl,
         },
       ]}
     />

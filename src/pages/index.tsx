@@ -13,7 +13,7 @@ const Home: React.FC<HomeProps> = ({ location }) => {
     <>
     <Banner/>
     <Layout location={location} hasBanner={true}>
-      <Seo title='경완' />
+      <Seo title='경완' description="KyungWan's Blog"/>
     </Layout>
     </>
   );
