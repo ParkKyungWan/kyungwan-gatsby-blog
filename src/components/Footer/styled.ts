@@ -1,13 +1,13 @@
 import styled from '@emotion/styled';
 
-import { contentMaxWidth, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
+import { contentMaxWidth, footerHeight, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
 
 export const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 62px;
+  height: ${footerHeight}px;
   margin-top: auto;
   position: fixed;
   bottom: 0;
@@ -17,7 +17,7 @@ export const Wrapper = styled.div`
 
   @media ${MOBILE_MEDIA_QUERY} {
     font-size: 13px;
-    height: 40px;
+    height: ${footerHeight/2*1.5}px;
   }
 `;
 

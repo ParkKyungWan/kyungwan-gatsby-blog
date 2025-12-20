@@ -1,6 +1,9 @@
 import { css, Theme } from '@emotion/react';
 
 export const contentMaxWidth = '720px';
+export const bannerHeight = '172px';
+export const headerHeight = '60px';
+export const footerHeight = 64;
 
 export const MOBILE_MAX_WIDTH = 768;
 export const MOBILE_MEDIA_QUERY = `screen and (max-width: ${MOBILE_MAX_WIDTH}px)`;
@@ -16,6 +19,7 @@ export const lightTheme: Theme = {
     gray20: '#EEEFF1',
     gray10: '#F7F8FA',
     white100: '#FFFFFF',
+    white99: '#FFFFFF',
   },
 };
 export const darkTheme: Theme = {
@@ -29,6 +33,7 @@ export const darkTheme: Theme = {
     gray20: '#3C3D40',
     gray10: '#2C2D2E',
     white100: '#232326',
+    white99: '#2C2D2E',
   },
 };
 

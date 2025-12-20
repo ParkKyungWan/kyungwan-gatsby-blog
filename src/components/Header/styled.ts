@@ -1,13 +1,13 @@
 import styled from '@emotion/styled';
 import { Link } from 'gatsby';
 
-import { contentMaxWidth, hoverEffect, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
+import { contentMaxWidth, headerHeight, hoverEffect, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
 
 export const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   width: 100%;
-  height: 60px;
+  height: ${headerHeight};
   position: fixed;
   top: 0;
   left: 0;

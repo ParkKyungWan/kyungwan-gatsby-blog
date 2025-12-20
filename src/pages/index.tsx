@@ -2,6 +2,7 @@ import React from 'react';
 
 import Seo from '../components/Seo';
 import Layout from '../layout';
+import Banner from '../components/Banner';
 
 type HomeProps = {
   location: Location;
@@ -9,9 +10,12 @@ type HomeProps = {
 
 const Home: React.FC<HomeProps> = ({ location }) => {
   return (
-    <Layout location={location}>
+    <>
+    <Banner/>
+    <Layout location={location} hasBanner={true}>
       <Seo title='경완' />
     </Layout>
+    </>
   );
 };
 

@@ -14,10 +14,11 @@ import * as S from './styled';
 
 type LayoutProps = {
   location: Location;
+  hasBanner: boolean;
   children: React.ReactNode;
 };
 
-const Layout: React.FC<LayoutProps> = ({ location, children }) => {
+const Layout: React.FC<LayoutProps> = ({ location, hasBanner, children }) => {
   const theme = useContext(ThemeManagerContext);
 
   const data = useStaticQuery(graphql`
@@ -36,6 +37,8 @@ const Layout: React.FC<LayoutProps> = ({ location, children }) => {
       <GlobalStyle />
       <S.Wrapper>
         <ThemeToggle />
+        <S.HeaderPadding />
+        {hasBanner && <S.BannerPadding />}
         <S.ContentWrapper>
           {location && <Header location={location} title={title} />}
           <S.Content>{children}</S.Content>
