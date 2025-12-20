@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { Link } from 'gatsby';
 
-import { contentMaxWidth, hoverUnderline, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
+import { contentMaxWidth, hoverEffect, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
 
 export const Wrapper = styled.div`
   display: flex;
@@ -53,7 +53,7 @@ export const Menu = styled.div`
 
 export const MenuLink = styled(Link)<{ isselected: string }>`
   font-size: 17px;
-  ${({ theme }) => hoverUnderline(theme)};
+  ${({ theme }) => hoverEffect(theme)};
   &:after {
     height: 2px;
     bottom: -2px;

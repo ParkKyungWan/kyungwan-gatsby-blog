@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { Link } from 'gatsby';
 
-import { contentMaxWidth, hoverUnderline, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
+import { contentMaxWidth, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
 
 export const Wrapper = styled.div`
   min-height: 150px;
@@ -73,7 +73,6 @@ export const Categories = styled.div`
 export const Category = styled(Link)`
   margin-left: 4px;
   color: ${({ theme }) => theme.color.gray60};
-  ${({ theme }) => hoverUnderline(theme)};
   &:after {
     background-color: ${({ theme }) => theme.color.gray60};
   }
