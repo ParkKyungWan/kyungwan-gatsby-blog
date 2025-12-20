@@ -17,7 +17,6 @@ const Seo: React.FC<SeoProps> = ({ description, title }) => {
           siteMetadata {
             title
             description
-            ogImage
             siteUrl
           }
         }
@@ -48,10 +47,6 @@ const Seo: React.FC<SeoProps> = ({ description, title }) => {
         {
           property: `og:description`,
           content: metaDescription,
-        },
-        {
-          property: 'og:image',
-          content: site.siteMetadata.ogImage,
         },
         {
           property: 'og:url',

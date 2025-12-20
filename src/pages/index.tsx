@@ -10,7 +10,7 @@ type HomeProps = {
 const Home: React.FC<HomeProps> = ({ location }) => {
   return (
     <Layout location={location}>
-      <Seo title='경완 블로그' />
+      <Seo title='경완' />
     </Layout>
   );
 };

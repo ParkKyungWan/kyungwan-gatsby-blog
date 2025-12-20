@@ -19,7 +19,7 @@ const Posts: React.FC<PostsProps> = ({ location, data }) => {
 
   return (
     <Layout location={location}>
-      <Seo title='개발자 단민 | Posts' />
+      <Seo title='경완 | Posts' />
       <div>
         {posts.map((post, index) => (
           <PostCard key={index} post={post} />
