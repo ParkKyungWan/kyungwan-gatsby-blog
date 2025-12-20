@@ -13,8 +13,7 @@
 
 &nbsp;
 
-## Work in Progress
-<img width="854" height="557" alt="스크린샷 2025-12-20 오후 5 23 50" src="https://github.com/user-attachments/assets/b782583d-9c93-4668-9075-d15534877ee6" />
+## - Work in Progress
 
-
+<p>제작 중</p>
 &nbsp;
