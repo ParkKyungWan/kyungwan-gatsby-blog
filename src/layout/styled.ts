@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-import { bannerHeight, contentMaxWidth, footerHeight, headerHeight, MOBILE_MEDIA_QUERY } from '../styles/const';
+import { bannerHeight, contentMaxWidth, footerHeight, headerHeight, m_bannerHeight, MOBILE_MEDIA_QUERY } from '../styles/const';
 
 export const Wrapper = styled.div`
   overflow-y: scroll;
@@ -24,6 +24,9 @@ export const HeaderPadding = styled.div`
 export const BannerPadding = styled.div`
   padding-top: ${bannerHeight};
   content: '';
+  @media ${MOBILE_MEDIA_QUERY} {
+    padding-top: ${m_bannerHeight};
+  }
 `;
 
 export const ContentWrapper = styled.div`

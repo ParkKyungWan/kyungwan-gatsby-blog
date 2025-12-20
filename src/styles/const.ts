@@ -2,6 +2,7 @@ import { css, Theme } from '@emotion/react';
 
 export const contentMaxWidth = '720px';
 export const bannerHeight = '172px';
+export const m_bannerHeight = '136px';
 export const headerHeight = '60px';
 export const footerHeight = 64;
 

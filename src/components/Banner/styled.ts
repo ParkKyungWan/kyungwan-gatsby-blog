@@ -1,4 +1,4 @@
-import { bannerHeight, contentMaxWidth, headerHeight, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
+import { bannerHeight, contentMaxWidth, headerHeight, m_bannerHeight, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
 import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 
@@ -14,6 +14,10 @@ export const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.color.white99};
   box-shadow: inset 0 6px 12px rgb(0, 0, 0, 0.06);
   z-index: -1;
+
+  @media ${MOBILE_MEDIA_QUERY} {
+    height: ${m_bannerHeight};
+  }
 `;
 
 export const Inner = styled.div`
