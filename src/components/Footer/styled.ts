@@ -16,7 +16,7 @@ export const Wrapper = styled.div`
   font-family: GmarketSansLight;
 
   @media ${MOBILE_MEDIA_QUERY} {
-    font-size: 13px;
+    font-size: 14px;
     height: ${(footerHeight / 2) * 1.5}px;
   }
 `;
