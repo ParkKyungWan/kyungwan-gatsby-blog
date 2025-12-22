@@ -13,12 +13,13 @@ export const Header = styled.div`
   align-items: center;
   width: 100%;
   border-bottom: 1px solid ${({ theme }) => theme.color.gray20};
-  padding: 12px;
+  padding: 0px 12px;
   height: 62px;
 `;
 
 export const LeftGroup = styled.div`
   display: flex;
+  height: 100%;
   flex-direction: row;
   align-items: center;
 `;
@@ -39,20 +40,19 @@ export const En = styled.span`
 `;
 
 export const MoreWrapper = styled.div`
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   a {
     font-size: 16px;
-    font-weight: 500;
     color: ${({ theme }) => theme.color.gray60};
     text-decoration: underline;
+    text-underline-offset: 3px;
   }
 `;
 
 export const Content = styled.div`
   width: 100%;
   padding: 24px 6px;
-`;
-
-export const Link = styled.a`
-  font-size: 18px;
-  color: ${({ theme }) => theme.color.gray60};
 `;

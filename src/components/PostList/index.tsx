@@ -15,7 +15,17 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
         const { id, slug, title, date, categories } = post;
         return (
           <S.Item key={id} to={slug}>
-            hi
+            <S.TopContent>
+              <S.Title>{title}</S.Title>
+              <S.Date>{date}</S.Date>
+            </S.TopContent>
+            <S.MiddleContent>
+              <S.Categories>
+                {categories.map((category) => (
+                  <S.Category key={category}>{category}</S.Category>
+                ))}
+              </S.Categories>
+            </S.MiddleContent>
           </S.Item>
         );
       })}

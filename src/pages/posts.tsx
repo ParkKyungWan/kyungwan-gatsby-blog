@@ -26,7 +26,6 @@ const Posts: React.FC<PostsProps> = ({ location, data }) => {
           emoji: '🏃‍♂️',
           kr: '게시글',
           en: 'Posts',
-          more: <a href='/posts'>link</a>,
         }}
       >
         <PostList posts={posts} />
