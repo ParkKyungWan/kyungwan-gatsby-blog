@@ -1,7 +1,8 @@
 import { graphql } from 'gatsby';
 import React from 'react';
 
-import PostCard from '../components/PostCard';
+import PostItem from '../components/PostItem';
+import Section from '../components/Section';
 import Seo from '../components/Seo';
 import Layout from '../layout';
 import PostClass from '../models/post';
@@ -18,13 +19,18 @@ const Posts: React.FC<PostsProps> = ({ location, data }) => {
   const posts = data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node));
 
   return (
-    <Layout location={location}>
+    <Layout location={location} hasBanner={false}>
       <Seo title='경완 | Posts' />
-      <div>
-        {posts.map((post, index) => (
-          <PostCard key={index} post={post} />
-        ))}
-      </div>
+      <Section
+        header={{
+          emoji: '🏃‍♂️',
+          kr: '게시글',
+          en: 'Posts',
+          more: <a href='/posts'>link</a>,
+        }}
+      >
+        <PostItem posts={posts} />
+      </Section>
     </Layout>
   );
 };
