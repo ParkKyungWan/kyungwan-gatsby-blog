@@ -12,12 +12,12 @@ export const Wrapper = styled.div`
   position: fixed;
   bottom: 0;
   z-index: -1;
-  background-color: ${({ theme }) => theme.color.gray10};
+  background-color: ${({ theme }) => theme.color.white99};
   font-family: GmarketSansLight;
 
   @media ${MOBILE_MEDIA_QUERY} {
-    font-size: 13px;
-    height: ${footerHeight/2*1.5}px;
+    font-size: 14px;
+    height: ${(footerHeight / 2) * 1.5}px;
   }
 `;
 
