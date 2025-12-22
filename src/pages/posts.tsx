@@ -1,7 +1,7 @@
 import { graphql } from 'gatsby';
 import React from 'react';
 
-import PostItem from '../components/PostItem';
+import PostList from '../components/PostList';
 import Section from '../components/Section';
 import Seo from '../components/Seo';
 import Layout from '../layout';
@@ -29,7 +29,7 @@ const Posts: React.FC<PostsProps> = ({ location, data }) => {
           more: <a href='/posts'>link</a>,
         }}
       >
-        <PostItem posts={posts} />
+        <PostList posts={posts} />
       </Section>
     </Layout>
   );

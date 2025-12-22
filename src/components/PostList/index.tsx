@@ -4,11 +4,11 @@ import PostClass from '@/src/models/post';
 
 import * as S from './styled';
 
-type PostItemProps = {
+type PostListProps = {
   posts: PostClass[];
 };
 
-const PostItem: React.FC<PostItemProps> = ({ posts }) => {
+const PostList: React.FC<PostListProps> = ({ posts }) => {
   return (
     <S.Wrapper>
       {posts.map((post) => {
@@ -23,4 +23,4 @@ const PostItem: React.FC<PostItemProps> = ({ posts }) => {
   );
 };
 
-export default PostItem;
+export default PostList;
