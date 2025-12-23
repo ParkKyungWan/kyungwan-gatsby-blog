@@ -14,6 +14,9 @@ export const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.color.white99};
   box-shadow: inset 0 6px 12px rgb(0, 0, 0, 0.06);
   z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  touch-action: none;
 
   @media ${MOBILE_MEDIA_QUERY} {
     height: ${m_bannerHeight};
@@ -56,7 +59,6 @@ type FloatingImageProps = {
     bottom?: string;
   };
   animation: ReturnType<typeof keyframes>;
-
 };
 
 export const FloatingImage = styled.img<FloatingImageProps>`
