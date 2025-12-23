@@ -6,9 +6,15 @@ export const List = styled.div`
   gap: 12px;
   width: 100%;
   margin-bottom: 24px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  padding-left: 3px;
 `;
 
 export const Button = styled.button<{ isSelected: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 16px;
   height: 28px;
   padding: 6px 12px;
