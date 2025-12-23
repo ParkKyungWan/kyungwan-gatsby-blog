@@ -1,9 +1,11 @@
 import { graphql } from 'gatsby';
 import React from 'react';
 
+import CategoryFilter from '../components/CategoryFilter';
 import PostList from '../components/PostList';
 import Section from '../components/Section';
 import Seo from '../components/Seo';
+import usePostsFilter from '../hooks/usePostsFilter';
 import Layout from '../layout';
 import PostClass from '../models/post';
 import { AllMarkdownRemark } from '../type';
@@ -17,6 +19,7 @@ type PostsProps = {
 
 const Posts: React.FC<PostsProps> = ({ location, data }) => {
   const posts = data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node));
+  const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(posts);
 
   return (
     <Layout location={location} hasBanner={false}>
@@ -28,7 +31,12 @@ const Posts: React.FC<PostsProps> = ({ location, data }) => {
           en: 'Posts',
         }}
       >
-        <PostList posts={posts} />
+        <CategoryFilter
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryClick={handleCategoryClick}
+        />
+        <PostList posts={filteredPosts} />
       </Section>
     </Layout>
   );

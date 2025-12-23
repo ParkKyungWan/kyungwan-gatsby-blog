@@ -12,7 +12,7 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
   return (
     <S.Wrapper>
       {posts.map((post) => {
-        const { id, slug, title, date, categories } = post;
+        const { id, slug, title, date, filteredCategories } = post;
         return (
           <S.Item key={id} to={slug}>
             <S.TopContent>
@@ -21,7 +21,7 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
             </S.TopContent>
             <S.MiddleContent>
               <S.Categories>
-                {categories.map((category) => (
+                {filteredCategories.map((category) => (
                   <S.Category key={category}>{category}</S.Category>
                 ))}
               </S.Categories>

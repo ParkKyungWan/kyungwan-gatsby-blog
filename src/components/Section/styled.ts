@@ -54,5 +54,5 @@ export const MoreWrapper = styled.div`
 
 export const Content = styled.div`
   width: 100%;
-  padding: 24px 6px;
+  padding: 12px 6px;
 `;

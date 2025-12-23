@@ -23,50 +23,6 @@ type CreatePagesFuncProps = {
   edges: AllMarkdownRemark['edges'];
 };
 
-const createPosts = ({ createPage, edges }: CreatePagesFuncProps) => {
-  const posts = path.resolve(`./src/templates/posts-template/index.tsx`);
-  const categorySet: Set<string> = new Set();
-
-  const edgesWithMap = edges.map((edge) => {
-    const { categories } = edge.node.frontmatter;
-    const categoriesArr = categories.split(' ');
-    const categoriesMap = categoriesArr.reduce((acc, category) => {
-      acc[category] = true;
-      return acc;
-    }, {} as Record<string, boolean>);
-
-    return { ...edge, categoriesMap };
-  });
-
-  edgesWithMap.forEach((edge) => {
-    const postCategories = Object.keys(edge.categoriesMap);
-    postCategories.forEach((category) => {
-      const categoryName = category.replace('featured-', '').trim();
-      categorySet.add(categoryName);
-    });
-  });
-
-  const categories = ['All', ...[...categorySet].sort((a, b) => a.localeCompare(b))];
-
-  createPage({
-    path: `/posts`,
-    component: posts,
-    context: { currentCategory: 'All', edges, categories },
-  });
-
-  categories.forEach((currentCategory) => {
-    createPage({
-      path: `/posts/${currentCategory}`,
-      component: posts,
-      context: {
-        currentCategory,
-        categories,
-        edges: edgesWithMap.filter((edge) => edge.categoriesMap[currentCategory]),
-      },
-    });
-  });
-};
-
 const createPost = ({ createPage, edges }: CreatePagesFuncProps) => {
   const post = path.resolve(`./src/templates/post-template/index.tsx`);
 
@@ -117,31 +73,7 @@ export const createPages: GatsbyNode['createPages'] = async ({ graphql, actions,
     return;
   }
 
-  const filteredEdges = result.data.allMarkdownRemark.edges.map((edge) => {
-    const { categories } = edge.node.frontmatter;
-    const categoriesArr = categories.split(' ');
-
-    const categorySet: Set<string> = new Set();
-
-    categoriesArr.forEach((category) => {
-      const categoryName = category.replace('featured-', '').trim();
-      categorySet.add(categoryName);
-    });
-
-    return {
-      ...edge,
-      node: {
-        ...edge.node,
-        frontmatter: {
-          ...edge.node.frontmatter,
-          categories: [...categorySet].sort((a, b) => a.localeCompare(b)).join(' '),
-        },
-      },
-    };
-  });
-
-  createPosts({ createPage, edges: filteredEdges });
-  createPost({ createPage, edges: filteredEdges });
+  createPost({ createPage, edges: result.data.allMarkdownRemark.edges });
 };
 
 export const onCreateNode: GatsbyNode['onCreateNode'] = ({ node, actions, getNode }) => {
