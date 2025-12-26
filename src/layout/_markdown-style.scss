@@ -1,5 +1,5 @@
 $content-max-width: 720px;
-$content-image-max-height: 560px;
+$content-image-max-height: 460px;
 
 .markdown .octicon {
   display: inline-block;
@@ -1027,7 +1027,7 @@ $content-image-max-height: 560px;
   justify-content: center;
   width: 340px;
   position: fixed;
-  top: 75px;
+  top: 102px;
   right: 0px;
   overflow-y: scroll;
 
@@ -1053,7 +1053,7 @@ $content-image-max-height: 560px;
 // added for image resizing
 .markdown .gatsby-resp-image-wrapper {
   display: flex !important;
-  justify-content: center !important;
+  justify-content: left !important;
   width: 100% !important;
   max-height: $content-image-max-height !important;
 
