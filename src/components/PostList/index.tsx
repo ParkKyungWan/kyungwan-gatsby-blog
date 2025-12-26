@@ -20,12 +20,11 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
               <S.Date>{date}</S.Date>
             </S.TopContent>
             <S.MiddleContent>
-              {/* 카테고리 표시 생략
               <S.Categories>
                 {filteredCategories.map((category) => (
                   <S.Category key={category}>{category}</S.Category>
                 ))}
-              </S.Categories> */}
+              </S.Categories>
               <S.Excerpt>{excerpt}</S.Excerpt>
             </S.MiddleContent>
           </S.Item>
