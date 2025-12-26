@@ -1,6 +1,6 @@
 ---
 emoji: 👩🏻‍💻
-title: '300km 러닝 후기'
+title: '300km 러닝 후기2'
 date: '2020-10-30'
 categories: featured-일상
 ---

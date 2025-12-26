@@ -26,12 +26,19 @@ type CreatePagesFuncProps = {
 const createPost = ({ createPage, edges }: CreatePagesFuncProps) => {
   const post = path.resolve(`./src/templates/post-template/index.tsx`);
 
-  edges.forEach(({ node }) => {
+  edges.forEach(({ node }, index) => {
+    const prev = index === edges.length - 1 ? null : edges[index + 1].node;
+    const next = index === 0 ? null : edges[index - 1].node;
+
     createPage({
       path: node.fields.slug,
       component: post,
       context: {
         slug: node.fields.slug,
+        prevSlug: prev?.fields.slug || null,
+        nextSlug: next?.fields.slug || null,
+        hasPrev: !!prev,
+        hasNext: !!next,
       },
     });
   });
