@@ -1,5 +1,5 @@
 $content-max-width: 720px;
-$content-image-max-height: 460px;
+$content-image-max-height: 380px;
 
 .markdown .octicon {
   display: inline-block;
@@ -27,16 +27,7 @@ $content-image-max-height: 460px;
   color: #1b1f23;
   vertical-align: middle;
   visibility: hidden;
-}
-
-.markdown h1:hover .anchor,
-.markdown h2:hover .anchor,
-.markdown h3:hover .anchor,
-.markdown h4:hover .anchor,
-.markdown h5:hover .anchor,
-.markdown h6:hover .anchor {
-  text-decoration: none;
-}
+} 
 
 .markdown h1:hover .anchor .octicon-link,
 .markdown h2:hover .anchor .octicon-link,
@@ -1056,13 +1047,26 @@ $content-image-max-height: 460px;
   justify-content: left !important;
   width: 100% !important;
   max-height: $content-image-max-height !important;
+  transition: max-height 0.3s ease-in-out !important;
+  margin: 12px 0;
+
 
   img {
     max-width: 100% !important;
-    max-height: $content-image-max-height !important;
+    max-height: --image-max-height, $content-image-max-height !important;
+    transition: max-height 0.3s ease-in-out !important;
     width: auto !important;
     height: auto !important;
+    object-fit: contain !important;
+    object-position: left top !important;
     position: relative !important;
+
+    @media screen and (max-width: 768px) {
+      max-height: 100% !important;
+    }
+  }
+  @media screen and (max-width: 768px) {
+    max-height: 100% !important;
   }
 }
 

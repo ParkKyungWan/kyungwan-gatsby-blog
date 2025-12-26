@@ -18,7 +18,7 @@ const PostTemplate: React.FC<PostTemplateProps> = ({ location, data }) => {
   const curPost = new PostClass(data.cur);
 
   return (
-    <Layout location={location}>
+    <Layout location={location} hasBanner={false}>
       <Seo title={`경완 | ${curPost?.title}`} description={curPost?.excerpt} />
       <PostHeader post={curPost} />
       <S.PostContent>

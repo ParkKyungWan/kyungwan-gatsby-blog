@@ -15,7 +15,7 @@ const usePostsFilter = (posts: PostClass[]) => {
         }
       });
     });
-    return ['전체', ...[...categorySet].sort((a, b) => a.localeCompare(b))];
+    return ['전체', ...[...categorySet].sort((a, b) => !a.localeCompare(b))];
   }, [posts]);
 
   const filteredPosts = useMemo(() => {

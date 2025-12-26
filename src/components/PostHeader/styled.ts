@@ -31,7 +31,7 @@ export const Categories = styled.div`
   font-size: 15px;
 `;
 
-export const Category = styled.p`
+export const Category = styled.span`
   margin-right: 4px;
   color: ${({ theme }) => theme.color.gray60};
 `;
@@ -40,6 +40,7 @@ export const Title = styled.h1`
   font-size: 32px;
   margin-bottom: 6px;
   line-height: 1.3;
+  font-family: Noto Sans KR;
 
   @media ${MOBILE_MEDIA_QUERY} {
     font-size: 25px;
