@@ -1,15 +1,13 @@
 ---
 emoji: 👩🏻‍💻
-title: 'example1'
+title: '인간이 사는 이유는 무엇인가'
 date: '2020-10-30'
-categories: featured-category1
+categories: featured-독서 글쓰기
 ---
 
 ## 예시 글입니다.
 
-![](ex.webp)
-
-test
+featured-category2로써 홈에 노출되며, category2와 category3으로 카테고리가 분류됩니다.
 
 ```toc
 ```

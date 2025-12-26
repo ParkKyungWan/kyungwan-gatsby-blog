@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import PostClass from '../models/post';
 
 const usePostsFilter = (posts: PostClass[]) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('전체');
 
   const categories = useMemo(() => {
     const categorySet = new Set<string>();
@@ -15,11 +15,11 @@ const usePostsFilter = (posts: PostClass[]) => {
         }
       });
     });
-    return ['All', ...[...categorySet].sort((a, b) => a.localeCompare(b))];
+    return ['전체', ...[...categorySet].sort((a, b) => a.localeCompare(b))];
   }, [posts]);
 
   const filteredPosts = useMemo(() => {
-    if (selectedCategory === 'All') {
+    if (selectedCategory === '전체') {
       return posts;
     }
     return posts.filter((post) =>

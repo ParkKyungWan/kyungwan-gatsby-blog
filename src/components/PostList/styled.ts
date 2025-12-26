@@ -70,3 +70,13 @@ export const Date = styled.span`
   font-size: 14px;
   color: ${({ theme }) => theme.color.gray60};
 `;
+
+export const Excerpt = styled.span`
+  padding: 0 6px;
+  font-size: 14px;
+  color: ${({ theme }) => theme.color.gray60};
+  width: 77%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
