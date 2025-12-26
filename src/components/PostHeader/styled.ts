@@ -10,7 +10,7 @@ export const Header = styled.header`
   width: 100%;
   padding-bottom: 40px;
   border-bottom: 1px solid ${({ theme }) => theme.color.gray20};
-  margin: 40px 0;
+  margin:24px 0;
   word-break: keep-all;
 `;
 
@@ -31,13 +31,9 @@ export const Categories = styled.div`
   font-size: 15px;
 `;
 
-export const Category = styled(Link)`
+export const Category = styled.p`
   margin-right: 4px;
   color: ${({ theme }) => theme.color.gray60};
-  ${({ theme }) => hoverEffect(theme)};
-  &:after {
-    background-color: ${({ theme }) => theme.color.gray60};
-  }
 `;
 
 export const Title = styled.h1`
