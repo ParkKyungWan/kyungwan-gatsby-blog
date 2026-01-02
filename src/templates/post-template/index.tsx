@@ -12,13 +12,13 @@ import * as S from './styled';
 
 type PostTemplateProps = {
   location: Location;
-  data: { cur: Post; prev?: Post; next?: Post };
+  data: { cur: Post };
 };
 
 const PostTemplate: React.FC<PostTemplateProps> = ({ location, data }) => {
   const curPost = new PostClass(data.cur);
-  const prevPost = data.prev ? new PostClass(data.prev) : undefined;
-  const nextPost = data.next ? new PostClass(data.next) : undefined;
+  const prevPost = data.prev && new PostClass(data.prev);
+  const nextPost = data.next && new PostClass(data.next);
 
   return (
     <Layout location={location} hasBanner={false}>
@@ -35,36 +35,8 @@ const PostTemplate: React.FC<PostTemplateProps> = ({ location, data }) => {
 export default PostTemplate;
 
 export const pageQuery = graphql`
-  query ($slug: String, $prevSlug: String, $nextSlug: String, $hasPrev: Boolean!, $hasNext: Boolean!) {
+  query ($slug: String) {
     cur: markdownRemark(fields: { slug: { eq: $slug } }) {
-      id
-      html
-      excerpt(pruneLength: 500, truncate: true)
-      frontmatter {
-        date(formatString: "YYYY.MM.DD")
-        title
-        categories
-        emoji
-      }
-      fields {
-        slug
-      }
-    }
-    prev: markdownRemark(fields: { slug: { eq: $prevSlug } }) @include(if: $hasPrev) {
-      id
-      html
-      excerpt(pruneLength: 500, truncate: true)
-      frontmatter {
-        date(formatString: "YYYY.MM.DD")
-        title
-        categories
-        emoji
-      }
-      fields {
-        slug
-      }
-    }
-    next: markdownRemark(fields: { slug: { eq: $nextSlug } }) @include(if: $hasNext) {
       id
       html
       excerpt(pruneLength: 500, truncate: true)

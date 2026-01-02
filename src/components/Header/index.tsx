@@ -23,8 +23,7 @@ const Header: React.FC<HeaderProps> = ({ title, location }) => {
         </div>
         <S.Menu>
           <S.MenuLink to='/posts'>Posts</S.MenuLink>
-          <S.MenuLink to='/posts'>Hobbies</S.MenuLink>
-          <S.MenuLink to='/posts'>Profile</S.MenuLink>
+          <S.MenuLink to='/hobbies'>Hobbies</S.MenuLink>
         </S.Menu>
       </S.Header>
     </S.Wrapper>
