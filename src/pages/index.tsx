@@ -25,6 +25,17 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
   const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
   const posts = filteredPosts.slice(0, 3);
 
+  const renderContentH = () => {
+    switch (selectedCategoryH) {
+      case '음주':
+        return <div>음주 컨텐츠</div>;
+      case '클라이밍':
+        return <div>클라이밍 컨텐츠</div>;
+      default:
+        return <div>컨텐츠를 선택해주세요</div>;
+    }
+  };
+
   return (
     <>
       <Banner />
@@ -61,6 +72,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
             selectedCategory={selectedCategoryH}
             onCategoryClick={handleCategoryClickH}
           />
+          {renderContentH()}
         </Section>
       </Layout>
     </>
