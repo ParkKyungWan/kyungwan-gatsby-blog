@@ -6,6 +6,7 @@ export const Wrapper = styled.div`
   width: 100%;
   grid-template-columns: 49.3% 49.3%;
   column-gap: 1.4%;
+  margin-top: 12px;
 `;
 
 export const PostCard = styled(Link)`
@@ -41,7 +42,7 @@ export const Direction = styled.div`
 `;
 
 export const Title = styled.div`
-  font-size: 16px;
+  font-size: 14px;
   line-height: 150%;
   overflow: hidden;
   text-overflow: ellipsis;
