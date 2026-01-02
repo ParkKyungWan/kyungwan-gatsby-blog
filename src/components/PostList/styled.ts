@@ -54,6 +54,7 @@ export const Categories = styled.div`
 
 export const Category = styled.div`
   font-size: 12px;
+  line-height: 1.4;
   color: ${({ theme }) => theme.color.gray60};
   text-decoration: none;
   padding: 4px 8px;
@@ -75,10 +76,12 @@ export const Date = styled.span`
 
 export const Excerpt = styled.span`
   font-size: 14px;
+  line-height: 1.4;
   color: ${({ theme }) => theme.color.gray60};
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: 'Noto Sans KR', sans-serif;
+  padding: 4px 0px 7px 0px;
 `;
