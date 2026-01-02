@@ -23,7 +23,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
   const allPosts = data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node));
   const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(allPosts);
   const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
-  const posts = filteredPosts.slice(0, 3);
+  const posts = filteredPosts.slice(0, 2);
 
   const renderContentH = () => {
     switch (selectedCategoryH) {
