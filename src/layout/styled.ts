@@ -53,5 +53,6 @@ export const Content = styled.main`
   align-items: center;
   position: relative;
   width: 100%;
+  gap: 24px;
   max-width: ${contentMaxWidth};
 `;

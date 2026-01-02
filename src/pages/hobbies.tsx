@@ -12,10 +12,10 @@ type HobbiesProps = {
 };
 
 const Hobbies: React.FC<HobbiesProps> = ({ location }) => {
-  const { categories, selectedCategory, handleCategoryClick } = useHobbiesFilter();
+  const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
 
   const renderContent = () => {
-    switch (selectedCategory) {
+    switch (selectedCategoryH) {
       case '음주':
         return <InstagramFeed />;
       case '클라이밍':
@@ -36,9 +36,9 @@ const Hobbies: React.FC<HobbiesProps> = ({ location }) => {
         }}
       >
         <CategoryFilter
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryClick={handleCategoryClick}
+          categories={categoriesH}
+          selectedCategory={selectedCategoryH}
+          onCategoryClick={handleCategoryClickH}
         />
         {renderContent()}
       </Section>
