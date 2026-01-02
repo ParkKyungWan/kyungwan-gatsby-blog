@@ -55,7 +55,7 @@ $content-image-max-height: 380px;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   line-height: 1.5;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
   word-wrap: break-word;
@@ -84,7 +84,7 @@ $content-image-max-height: 380px;
 }
 
 .markdown h1 {
-  font-size: 2em;
+  font-size: 16px;
   margin: 0.67em 0;
 }
 
@@ -690,23 +690,23 @@ $content-image-max-height: 380px;
 }
 
 .markdown h1 {
-  font-size: 2em;
+  font-size: 22px;
 }
 
 .markdown h2 {
-  font-size: 1.5em;
+  font-size: 20px;
 }
 
 .markdown h3 {
-  font-size: 1.25em;
+  font-size: 18px;
 }
 
 .markdown h4 {
-  font-size: 1em;
+  font-size: 16px;
 }
 
 .markdown h5 {
-  font-size: 0.875em;
+  font-size: 16px;
 }
 
 .markdown h6 {
@@ -1044,11 +1044,11 @@ $content-image-max-height: 380px;
 // added for image resizing
 .markdown .gatsby-resp-image-wrapper {
   display: flex !important;
-  justify-content: left !important;
+  justify-content: flex-start !important;
   width: 100% !important;
   max-height: $content-image-max-height !important;
   transition: max-height 0.3s ease-in-out !important;
-  margin: 12px 0;
+  margin: 12px 0 !important;
 
 
   img {
