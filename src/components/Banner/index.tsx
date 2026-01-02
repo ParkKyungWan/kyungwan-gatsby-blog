@@ -45,32 +45,32 @@ const HomeBanner: React.FC = () => {
     <S.Wrapper>
       <S.Inner>
         <BannerImage
-          src="/banner/guinea.png"
-          alt="guinea"
+          src='/banner/guinea.png'
+          alt='guinea'
           position={{ left: '3%', top: '35%' }}
           animation={createFloatAnimation('translateY(-50%)', 8, -10, 1.5, -5, 8, -1)}
         />
         <BannerImage
-          src="/banner/stone.png"
-          alt="stone"
+          src='/banner/stone.png'
+          alt='stone'
           position={{ left: '51%', top: '-2%' }}
           animation={createFloatAnimation('translateX(-50%)', -9, 6, -1.5, 6, -8, 1)}
         />
         <BannerImage
-          src="/banner/shoe.png"
-          alt="shoe"
+          src='/banner/shoe.png'
+          alt='shoe'
           position={{ right: '0', top: '36%' }}
           animation={createFloatAnimation('translateY(-50%)', -6, 9, -1, 10, -5, 1.5)}
         />
         <BannerImage
-          src="/banner/wine.png"
-          alt="wine"
+          src='/banner/wine.png'
+          alt='wine'
           position={{ left: '30%', bottom: '-5%' }}
           animation={createFloatAnimation('translateX(-50%)', 9, -8, 1, -8, 10, -1.5)}
         />
         <BannerImage
-          src="/banner/drip.png"
-          alt="drip"
+          src='/banner/drip.png'
+          alt='drip'
           position={{ right: '30%', bottom: '-2%' }}
           animation={createFloatAnimation('translateX(50%)', -10, -6, -1, 8, 9, 1.5)}
         />

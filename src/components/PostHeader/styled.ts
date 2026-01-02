@@ -10,7 +10,7 @@ export const Header = styled.header`
   width: 100%;
   padding-bottom: 40px;
   border-bottom: 1px solid ${({ theme }) => theme.color.gray20};
-  margin:24px 0;
+  margin: 24px 0;
   word-break: keep-all;
 `;
 

@@ -62,5 +62,3 @@ export const Empty = styled.div`
   padding: 40px;
   color: ${({ theme }) => theme.color.gray60};
 `;
-
-

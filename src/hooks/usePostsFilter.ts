@@ -40,4 +40,3 @@ const usePostsFilter = (posts: PostClass[]) => {
 };
 
 export default usePostsFilter;
-

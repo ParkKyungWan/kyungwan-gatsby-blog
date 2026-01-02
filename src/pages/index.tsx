@@ -62,7 +62,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
             onCategoryClick={handleCategoryClickH}
           />
         </Section>
-    </Layout>
+      </Layout>
     </>
   );
 };

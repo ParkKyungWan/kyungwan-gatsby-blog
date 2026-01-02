@@ -8,18 +8,14 @@ type CategoryFilterProps = {
   onCategoryClick: (category: string) => void;
 };
 
-const CategoryFilter: React.FC<CategoryFilterProps> = ({
-  categories = [],
-  selectedCategory,
-  onCategoryClick,
-}) => {
+const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories = [], selectedCategory, onCategoryClick }) => {
   return (
     <S.List>
       {categories.map((category) => (
         <S.Button
           key={category}
           onClick={() => onCategoryClick(category)}
-          type="button"
+          type='button'
           isSelected={selectedCategory === category}
         >
           {category}
@@ -30,4 +26,3 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
 };
 
 export default CategoryFilter;
-
