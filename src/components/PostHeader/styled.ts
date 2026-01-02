@@ -10,7 +10,7 @@ export const Header = styled.header`
   width: 100%;
   padding-bottom: 40px;
   border-bottom: 1px solid ${({ theme }) => theme.color.gray20};
-  margin: 40px 0;
+  margin:24px 0;
   word-break: keep-all;
 `;
 
@@ -31,19 +31,16 @@ export const Categories = styled.div`
   font-size: 15px;
 `;
 
-export const Category = styled(Link)`
+export const Category = styled.span`
   margin-right: 4px;
   color: ${({ theme }) => theme.color.gray60};
-  ${({ theme }) => hoverEffect(theme)};
-  &:after {
-    background-color: ${({ theme }) => theme.color.gray60};
-  }
 `;
 
 export const Title = styled.h1`
   font-size: 32px;
   margin-bottom: 6px;
   line-height: 1.3;
+  font-family: Noto Sans KR;
 
   @media ${MOBILE_MEDIA_QUERY} {
     font-size: 25px;

@@ -37,36 +37,51 @@ export const TopContent = styled.div`
 `;
 
 export const MiddleContent = styled.div`
-  width: 100%;
+  width: 77%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
 `;
 
 export const Categories = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
   gap: 6px;
   align-items: center;
+  flex-shrink: 0;
 `;
 
 export const Category = styled.div`
   font-size: 12px;
+  line-height: 1.4;
   color: ${({ theme }) => theme.color.gray60};
   text-decoration: none;
   padding: 4px 8px;
   border-radius: 4px;
   background-color: ${({ theme }) => theme.color.gray10};
+  white-space: nowrap;
 `;
 
 export const Title = styled.span`
   padding: 0 6px;
   font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
 `;
 
 export const Date = styled.span`
   font-size: 14px;
   color: ${({ theme }) => theme.color.gray60};
+`;
+
+export const Excerpt = styled.span`
+  font-size: 14px;
+  line-height: 1.4;
+  color: ${({ theme }) => theme.color.gray60};
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Noto Sans KR', sans-serif;
+  padding: 4px 0px 7px 0px;
 `;

@@ -2,6 +2,7 @@ import { graphql } from 'gatsby';
 import React from 'react';
 
 import PostHeader from '@/src/components/PostHeader';
+import PostNavigator from '@/src/components/PostNavigator';
 import Seo from '@/src/components/Seo';
 import Layout from '@/src/layout';
 import PostClass from '@/src/models/post';
@@ -16,14 +17,17 @@ type PostTemplateProps = {
 
 const PostTemplate: React.FC<PostTemplateProps> = ({ location, data }) => {
   const curPost = new PostClass(data.cur);
+  const prevPost = data.prev && new PostClass(data.prev);
+  const nextPost = data.next && new PostClass(data.next);
 
   return (
-    <Layout location={location}>
-      <Seo title={`개발자 단민 | ${curPost?.title}`} description={curPost?.excerpt} />
+    <Layout location={location} hasBanner={false}>
+      <Seo title={`경완 | ${curPost?.title}`} description={curPost?.excerpt} />
       <PostHeader post={curPost} />
       <S.PostContent>
         <div className='markdown' dangerouslySetInnerHTML={{ __html: curPost.html }} />
       </S.PostContent>
+      <PostNavigator prevPost={prevPost} nextPost={nextPost} />
     </Layout>
   );
 };

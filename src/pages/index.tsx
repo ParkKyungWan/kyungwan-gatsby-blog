@@ -45,7 +45,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
           />
           <PostList posts={posts} />
         </Section>
-      </Layout>
+    </Layout>
     </>
   );
 };

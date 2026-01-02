@@ -1,5 +1,5 @@
 $content-max-width: 720px;
-$content-image-max-height: 560px;
+$content-image-max-height: 380px;
 
 .markdown .octicon {
   display: inline-block;
@@ -27,16 +27,7 @@ $content-image-max-height: 560px;
   color: #1b1f23;
   vertical-align: middle;
   visibility: hidden;
-}
-
-.markdown h1:hover .anchor,
-.markdown h2:hover .anchor,
-.markdown h3:hover .anchor,
-.markdown h4:hover .anchor,
-.markdown h5:hover .anchor,
-.markdown h6:hover .anchor {
-  text-decoration: none;
-}
+} 
 
 .markdown h1:hover .anchor .octicon-link,
 .markdown h2:hover .anchor .octicon-link,
@@ -64,7 +55,7 @@ $content-image-max-height: 560px;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   line-height: 1.5;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
   word-wrap: break-word;
@@ -93,7 +84,7 @@ $content-image-max-height: 560px;
 }
 
 .markdown h1 {
-  font-size: 2em;
+  font-size: 16px;
   margin: 0.67em 0;
 }
 
@@ -699,23 +690,23 @@ $content-image-max-height: 560px;
 }
 
 .markdown h1 {
-  font-size: 2em;
+  font-size: 22px;
 }
 
 .markdown h2 {
-  font-size: 1.5em;
+  font-size: 20px;
 }
 
 .markdown h3 {
-  font-size: 1.25em;
+  font-size: 18px;
 }
 
 .markdown h4 {
-  font-size: 1em;
+  font-size: 16px;
 }
 
 .markdown h5 {
-  font-size: 0.875em;
+  font-size: 16px;
 }
 
 .markdown h6 {
@@ -1027,7 +1018,7 @@ $content-image-max-height: 560px;
   justify-content: center;
   width: 340px;
   position: fixed;
-  top: 75px;
+  top: 102px;
   right: 0px;
   overflow-y: scroll;
 
@@ -1053,16 +1044,29 @@ $content-image-max-height: 560px;
 // added for image resizing
 .markdown .gatsby-resp-image-wrapper {
   display: flex !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   width: 100% !important;
   max-height: $content-image-max-height !important;
+  transition: max-height 0.3s ease-in-out !important;
+  margin: 12px 0 !important;
+
 
   img {
     max-width: 100% !important;
-    max-height: $content-image-max-height !important;
+    max-height: --image-max-height, $content-image-max-height !important;
+    transition: max-height 0.3s ease-in-out !important;
     width: auto !important;
     height: auto !important;
+    object-fit: contain !important;
+    object-position: left top !important;
     position: relative !important;
+
+    @media screen and (max-width: 768px) {
+      max-height: 100% !important;
+    }
+  }
+  @media screen and (max-width: 768px) {
+    max-height: 100% !important;
   }
 }
 
