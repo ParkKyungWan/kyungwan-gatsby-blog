@@ -30,3 +30,9 @@ export const Footer = styled.p`
 export const Link = styled.a`
   border-bottom: 1px solid ${({ theme }) => theme.color.black100};
 `;
+
+export const SubLink = styled.a`
+  text-decoration: none;
+  margin-left: 4px;
+  color: ${({ theme }) => theme.color.gray80};
+`;
