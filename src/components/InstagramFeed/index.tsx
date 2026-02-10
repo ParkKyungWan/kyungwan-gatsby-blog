@@ -21,7 +21,7 @@ const InstagramFeed: React.FC = () => {
         // Instagram Graph API를 사용하려면 액세스 토큰이 필요합니다
         // 환경 변수에서 토큰 가져오기 (GATSBY_ 접두사 필요)
         const accessToken = process.env.GATSBY_INSTAGRAM_ACCESS_TOKEN;
-        
+
         if (!accessToken) {
           setError('Instagram API 토큰이 설정되지 않았습니다. 환경 변수 GATSBY_INSTAGRAM_ACCESS_TOKEN을 설정해주세요.');
           setLoading(false);
@@ -40,7 +40,7 @@ const InstagramFeed: React.FC = () => {
 
         // Instagram Graph API로 미디어 가져오기
         const response = await fetch(
-          `https://graph.instagram.com/${userId}/media?fields=id,media_url,permalink,caption,timestamp&access_token=${accessToken}&limit=12`
+          `https://graph.instagram.com/${userId}/media?fields=id,media_url,permalink,caption,timestamp&access_token=${accessToken}&limit=12`,
         );
 
         if (!response.ok) {
@@ -48,13 +48,13 @@ const InstagramFeed: React.FC = () => {
         }
 
         const data = await response.json();
-        
+
         if (data.data) {
           setPosts(data.data);
         } else {
           setError('데이터를 불러올 수 없습니다.');
         }
-        
+
         setLoading(false);
       } catch (err) {
         setError('Instagram 피드를 불러오는 중 오류가 발생했습니다.');
@@ -89,4 +89,3 @@ const InstagramFeed: React.FC = () => {
 };
 
 export default InstagramFeed;
-

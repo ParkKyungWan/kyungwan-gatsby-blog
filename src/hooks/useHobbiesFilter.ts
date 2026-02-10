@@ -1,20 +1,20 @@
 import { useMemo, useState } from 'react';
 
 const useHobbiesFilter = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('클라이밍');
+  const [selectedCategoryH, setSelectedCategoryH] = useState<string>('음주');
 
-  const categories = useMemo(() => {
-    return ['음주','클라이밍'];
+  const categoriesH = useMemo(() => {
+    return ['음주', '클라이밍'];
   }, []);
 
-  const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category);
+  const handleCategoryClickH = (category: string) => {
+    setSelectedCategoryH(category);
   };
 
   return {
-    categories,
-    selectedCategory,
-    handleCategoryClick,
+    categoriesH,
+    selectedCategoryH,
+    handleCategoryClickH,
   };
 };
 

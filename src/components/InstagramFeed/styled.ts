@@ -63,4 +63,3 @@ export const Empty = styled.div`
   color: ${({ theme }) => theme.color.gray60};
 `;
 
-

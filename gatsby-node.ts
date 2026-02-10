@@ -26,12 +26,17 @@ type CreatePagesFuncProps = {
 const createPost = ({ createPage, edges }: CreatePagesFuncProps) => {
   const post = path.resolve(`./src/templates/post-template/index.tsx`);
 
-  edges.forEach(({ node }) => {
+  edges.forEach(({ node }, index) => {
+    const prevSlug = index === edges.length - 1 ? null : edges[index + 1].node.fields.slug;
+    const nextSlug = index === 0 ? null : edges[index - 1].node.fields.slug;
+
     createPage({
       path: node.fields.slug,
       component: post,
       context: {
         slug: node.fields.slug,
+        prevSlug,
+        nextSlug,
       },
     });
   });

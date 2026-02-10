@@ -1,6 +1,7 @@
 import React from 'react';
 
 import CategoryFilter from '../components/CategoryFilter';
+import ImageCarousel from '../components/ImageCarousel';
 import InstagramFeed from '../components/InstagramFeed';
 import Section from '../components/Section';
 import Seo from '../components/Seo';
@@ -12,14 +13,25 @@ type HobbiesProps = {
 };
 
 const Hobbies: React.FC<HobbiesProps> = ({ location }) => {
-  const { categories, selectedCategory, handleCategoryClick } = useHobbiesFilter();
+  const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
+
+  const climbingImages = [
+    '/hobbies/climbing1.png',
+    '/hobbies/climbing1.png',
+    '/hobbies/climbing1.png',
+    '/hobbies/climbing1.png',
+    '/hobbies/climbing1.png',
+    '/hobbies/climbing1.png',
+    '/hobbies/climbing1.png',
+    '/hobbies/climbing1.png',
+  ];
 
   const renderContent = () => {
-    switch (selectedCategory) {
+    switch (selectedCategoryH) {
       case '음주':
         return <InstagramFeed />;
       case '클라이밍':
-        return <div>클라이밍 컨텐츠</div>;
+        return <ImageCarousel images={climbingImages} />;
       default:
         return <div>컨텐츠를 선택해주세요</div>;
     }
@@ -36,9 +48,9 @@ const Hobbies: React.FC<HobbiesProps> = ({ location }) => {
         }}
       >
         <CategoryFilter
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryClick={handleCategoryClick}
+          categories={categoriesH}
+          selectedCategory={selectedCategoryH}
+          onCategoryClick={handleCategoryClickH}
         />
         {renderContent()}
       </Section>

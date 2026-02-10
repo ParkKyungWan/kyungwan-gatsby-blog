@@ -1,6 +1,13 @@
 import styled from '@emotion/styled';
 
-import { bannerHeight, contentMaxWidth, footerHeight, headerHeight, m_bannerHeight, MOBILE_MEDIA_QUERY } from '../styles/const';
+import {
+  bannerHeight,
+  contentMaxWidth,
+  footerHeight,
+  headerHeight,
+  m_bannerHeight,
+  MOBILE_MEDIA_QUERY,
+} from '../styles/const';
 
 export const Wrapper = styled.div`
   overflow-y: scroll;
@@ -43,7 +50,7 @@ export const ContentWrapper = styled.div`
   box-shadow: 0 6px 12px rgb(0, 0, 0, 0.04), 0 -6px 12px rgb(0, 0, 0, 0.04);
 
   @media ${MOBILE_MEDIA_QUERY} {
-    margin-bottom: ${footerHeight/2*1.5}px;
+    margin-bottom: ${(footerHeight / 2) * 1.5}px;
   }
 `;
 
@@ -53,5 +60,6 @@ export const Content = styled.main`
   align-items: center;
   position: relative;
   width: 100%;
+  gap: 24px;
   max-width: ${contentMaxWidth};
 `;

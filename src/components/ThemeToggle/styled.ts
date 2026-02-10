@@ -34,4 +34,3 @@ export const Wrapper = styled.div<{ isDark: boolean }>`
     }
   }
 `;
-

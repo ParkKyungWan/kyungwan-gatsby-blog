@@ -6,6 +6,7 @@ import CategoryFilter from '../components/CategoryFilter';
 import PostList from '../components/PostList';
 import Section from '../components/Section';
 import Seo from '../components/Seo';
+import useHobbiesFilter from '../hooks/useHobbiesFilter';
 import usePostsFilter from '../hooks/usePostsFilter';
 import Layout from '../layout';
 import PostClass from '../models/post';
@@ -21,14 +22,25 @@ type HomeProps = {
 const Home: React.FC<HomeProps> = ({ location, data }) => {
   const allPosts = data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node));
   const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(allPosts);
-  const posts = filteredPosts.slice(0, 3);
+  const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
+  const posts = filteredPosts.slice(0, 2);
+
+  const renderContentH = () => {
+    switch (selectedCategoryH) {
+      case '음주':
+        return <div>음주 컨텐츠</div>;
+      case '클라이밍':
+        return <div>클라이밍 컨텐츠</div>;
+      default:
+        return <div>컨텐츠를 선택해주세요</div>;
+    }
+  };
 
   return (
     <>
       <Banner />
       <Layout location={location} hasBanner={true}>
         <Seo title='경완' description="KyungWan's Blog" />
-
         {/* 게시글 리스트 */}
         <Section
           header={{
@@ -45,7 +57,25 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
           />
           <PostList posts={posts} />
         </Section>
-    </Layout>
+
+        {/* 취미 리스트 
+        <Section
+          header={{
+            emoji: '🍷',
+            kr: '취미',
+            en: 'Hobbies',
+            more: <a href='/hobbies'>전체보기</a>,
+          }}
+        >
+          <CategoryFilter
+            categories={categoriesH}
+            selectedCategory={selectedCategoryH}
+            onCategoryClick={handleCategoryClickH}
+          />
+          {renderContentH()}
+        </Section>
+        */}
+      </Layout>
     </>
   );
 };
