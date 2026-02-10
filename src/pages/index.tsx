@@ -58,7 +58,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
           <PostList posts={posts} />
         </Section>
 
-        {/* 취미 리스트 */}
+        {/* 취미 리스트 
         <Section
           header={{
             emoji: '🍷',
@@ -74,6 +74,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
           />
           {renderContentH()}
         </Section>
+        */}
       </Layout>
     </>
   );
