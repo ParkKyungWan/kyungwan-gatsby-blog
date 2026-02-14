@@ -14,8 +14,8 @@ const Activity: React.FC<ActivityProps> = ({ location }) => {
       <Seo title='경완 | Activity' />
       <Section
         header={{
-          emoji: '🎯',
-          kr: '활동',
+          emoji: '📋',
+          kr: '기록',
           en: 'Activity',
         }}
       >
