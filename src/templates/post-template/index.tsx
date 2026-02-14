@@ -23,11 +23,13 @@ const PostTemplate: React.FC<PostTemplateProps> = ({ location, data }) => {
   return (
     <Layout location={location} hasBanner={false}>
       <Seo title={`경완 | ${curPost?.title}`} description={curPost?.excerpt} />
-      <PostHeader post={curPost} />
-      <S.PostContent>
-        <div className='markdown' dangerouslySetInnerHTML={{ __html: curPost.html }} />
-      </S.PostContent>
-      <PostNavigator prevPost={prevPost} nextPost={nextPost} />
+      <S.Wrapper>
+        <PostHeader post={curPost} />
+        <S.PostContent>
+          <div className='markdown' dangerouslySetInnerHTML={{ __html: curPost.html }} />
+        </S.PostContent>
+        <PostNavigator prevPost={prevPost} nextPost={nextPost} />
+      </S.Wrapper>
     </Layout>
   );
 };
