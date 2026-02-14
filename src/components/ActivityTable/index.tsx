@@ -1,4 +1,5 @@
 import React, { useContext, useRef, useEffect } from 'react';
+import { ThemeProvider, useTheme } from '@emotion/react';
 import { ThemeManagerContext } from 'gatsby-emotion-dark-mode';
 
 import * as S from './styled';
@@ -16,8 +17,9 @@ type ActivityTableProps = {
 };
 
 const ActivityTable: React.FC<ActivityTableProps> = ({ data }) => {
-  const theme = useContext(ThemeManagerContext);
-  const isDark = theme.isDark;
+  const themeManager = useContext(ThemeManagerContext);
+  const isDark = themeManager.isDark;
+  const theme = useTheme();
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // PC에서 마우스 휠로 가로 스크롤 가능하도록
@@ -41,10 +43,16 @@ const ActivityTable: React.FC<ActivityTableProps> = ({ data }) => {
   }, []);
 
   const getColor = (value: number): string => {
-    if (value === 2) return '#2E9217';
-    if (value === 1) return 'rgba(46, 146, 23, 0.33)'; // 33% opacity
-    // 다크모드에서는 회색을 더 밝게, 라이트모드에서는 기존 색상 유지
-    return isDark ? '#626368' : '#DBDBDB';
+    if (value === 2) {
+      // 다크모드: 더 밝은 녹색, 라이트모드: 기존 녹색
+      return isDark ? '#4BB550' : '#2E9217';
+    }
+    if (value === 1) {
+      // 다크모드: 중간 밝기의 녹색, 라이트모드: 기존 투명 녹색
+      return isDark ? '#576957' : '#BADBB2';
+    }
+    // value === 0: 다크모드에서는 더 어두운 회색, 라이트모드: 기존 회색
+    return isDark ? theme.color.gray20 : '#DBDBDB';
   };
 
   // 배열 길이를 day로 맞추는 함수
