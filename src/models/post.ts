@@ -17,7 +17,7 @@ export default class PostClass {
     const { slug } = fields;
     const { emoji, categories, title, author, date } = frontmatter;
 
-    const categoryArr = categories.split(' ');
+    const categoryArr = categories ? categories.split(' ') : [];
 
     this.id = id;
     this.excerpt = excerpt;

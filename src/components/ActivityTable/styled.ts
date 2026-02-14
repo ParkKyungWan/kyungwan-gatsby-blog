@@ -89,3 +89,13 @@ export const Square = styled.div<{ color: string }>`
   flex-shrink: 0;
 `;
 
+export const YearSelect = styled.select`
+  font-size: 16px;
+  color: ${({ theme }) => theme.color.gray80};
+  border: none;
+  background-color: ${({ theme }) => theme.color.gray10};
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+`;
+

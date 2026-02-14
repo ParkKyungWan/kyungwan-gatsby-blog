@@ -120,6 +120,13 @@ const config: GatsbyConfig = {
     {
       resolve: `gatsby-source-filesystem`,
       options: {
+        path: `${__dirname}/activities`,
+        name: `activities`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
         name: `assets`,
         path: `${__dirname}/assets`,
       },
@@ -134,6 +141,8 @@ const config: GatsbyConfig = {
               maxWidth: 720,
               linkImagesToOriginal: false,
               backgroundColor: 'transparent',
+              withWebp: true,
+              quality: 90,
             },
           },
           {
