@@ -1,11 +1,22 @@
 import React from 'react';
 
+import ActivityTable, { ActivityTableData } from '../components/ActivityTable';
 import Seo from '../components/Seo';
 import Section from '../components/Section';
 import Layout from '../layout';
 
 type ActivityProps = {
   location: Location;
+};
+
+// 예시 데이터
+const exampleData: ActivityTableData = {
+  month: 1,
+  day: 31,
+  data: [
+    ['🏃', [2, 1, 0, 2, 1, 1, 0]],
+    ['📚', [1, 2, 2, 0, 1, 0, 2]],
+  ],
 };
 
 const Activity: React.FC<ActivityProps> = ({ location }) => {
@@ -19,7 +30,7 @@ const Activity: React.FC<ActivityProps> = ({ location }) => {
           en: 'Activity',
         }}
       >
-        <div>활동 컨텐츠를 여기에 추가하세요</div>
+        <ActivityTable data={exampleData} />
       </Section>
     </Layout>
   );
