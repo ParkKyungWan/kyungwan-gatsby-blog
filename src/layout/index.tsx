@@ -36,7 +36,6 @@ const Layout: React.FC<LayoutProps> = ({ location, hasBanner, children }) => {
     <ThemeProvider theme={theme.isDark ? darkTheme : lightTheme}>
       <GlobalStyle />
       <S.Wrapper>
-        <ThemeToggle />
         <S.HeaderPadding />
         {hasBanner && <S.BannerPadding />}
         <S.ContentWrapper>

@@ -45,7 +45,7 @@ export const ContentWrapper = styled.div`
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  padding: 24px 12px;
+  padding: 36px 12px;
   background-color: ${({ theme }) => theme.color.white100};
   box-shadow: 0 6px 12px rgb(0, 0, 0, 0.04), 0 -6px 12px rgb(0, 0, 0, 0.04);
 
@@ -60,6 +60,6 @@ export const Content = styled.main`
   align-items: center;
   position: relative;
   width: 100%;
-  gap: 24px;
+  gap: 36px;
   max-width: ${contentMaxWidth};
 `;

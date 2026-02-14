@@ -2,7 +2,7 @@ export default {
   /**
    * basic Information
    */
-  title: `Park KyungWan`,
+  title: `ruddhks.my`,
   description: `KyungWan's Blog`,
   language: `ko`,
   siteUrl: `https://ruddhks.my`,

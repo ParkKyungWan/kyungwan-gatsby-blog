@@ -29,8 +29,8 @@ export const Header = styled.div`
   .mobile-logo {
     @media ${MOBILE_MEDIA_QUERY} {
       background-color: ${({ theme }) => theme.color.black100};
-      width: 25px;
-      height: 25px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -42,6 +42,12 @@ export const Header = styled.div`
       }
     }
   }
+`;
+
+export const TitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
 export const Menu = styled.div`

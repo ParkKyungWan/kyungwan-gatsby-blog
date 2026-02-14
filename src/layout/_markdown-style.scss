@@ -1049,17 +1049,18 @@ $content-image-max-height: 380px;
   max-height: $content-image-max-height !important;
   transition: max-height 0.3s ease-in-out !important;
   margin: 12px 0 !important;
-
+  overflow: hidden !important;
 
   img {
     max-width: 100% !important;
-    max-height: --image-max-height, $content-image-max-height !important;
+    max-height: $content-image-max-height !important;
     transition: max-height 0.3s ease-in-out !important;
     width: auto !important;
     height: auto !important;
     object-fit: contain !important;
     object-position: left top !important;
     position: relative !important;
+    display: block !important;
 
     @media screen and (max-width: 768px) {
       max-height: 100% !important;
