@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 
 import ActivityTable, { ActivityTableData } from '../components/ActivityTable';
 import * as ActivityTableStyled from '../components/ActivityTable/styled';
+import ActivitySummary from '../components/ActivitySummary';
 import CategoryFilter from '../components/CategoryFilter';
 import Seo from '../components/Seo';
 import Section from '../components/Section';
@@ -23,9 +24,9 @@ type ActivityProps = {
             emojis?: string[];
             activities?: Array<{
               day: number;
-              emoji: string;
-              level: number;
-              summary?: string;
+              emoji: string | string[];
+              level: number | number[];
+              summary?: string | string[];
             }>;
           };
         };
@@ -60,9 +61,38 @@ const Activity: React.FC<ActivityProps> = ({ location, data }) => {
       const values: number[] = Array(day).fill(0); // 초기값 0으로 채움
 
       // dayActivities에서 해당 이모지의 데이터 찾아서 채우기
-      (dayActivities || []).forEach((activity: { day: number; emoji: string; level: number }) => {
-        if (activity.emoji === emoji && activity.day >= 1 && activity.day <= day) {
-          values[activity.day - 1] = activity.level; // day는 1부터 시작하므로 -1
+      // 같은 날에 같은 이모지가 여러 번 나올 수 있으므로, 가장 높은 레벨을 사용
+      (dayActivities || []).forEach((activity: {
+        day: number;
+        emoji: string | string[];
+        level: number | number[];
+      }) => {
+        const activityEmojis = Array.isArray(activity.emoji) ? activity.emoji : [activity.emoji];
+        const activityLevels = Array.isArray(activity.level) ? activity.level : [activity.level];
+
+        // 이모지와 레벨 배열의 길이가 맞는지 확인
+        if (activityEmojis.length === activityLevels.length && activity.day >= 1 && activity.day <= day) {
+          const dayIndex = activity.day - 1; // day는 1부터 시작하므로 -1
+          
+          // 해당 이모지의 레벨 찾기
+          activityEmojis.forEach((actEmoji, idx) => {
+            if (actEmoji === emoji) {
+              const actLevel = activityLevels[idx];
+              // 기존 레벨보다 높은 레벨이면 업데이트
+              if (actLevel > values[dayIndex]) {
+                values[dayIndex] = actLevel;
+              }
+            }
+          });
+        } else if (!Array.isArray(activity.emoji) && !Array.isArray(activity.level)) {
+          // 기존 형식 (단일 이모지, 단일 레벨) 지원
+          if (activity.emoji === emoji && activity.day >= 1 && activity.day <= day) {
+            const dayIndex = activity.day - 1;
+            const actLevel = activity.level as number;
+            if (actLevel > values[dayIndex]) {
+              values[dayIndex] = actLevel;
+            }
+          }
         }
       });
 
@@ -104,7 +134,17 @@ const Activity: React.FC<ActivityProps> = ({ location, data }) => {
           onCategoryClick={handleMonthClick}
         />
         {activityTableData ? (
-          <ActivityTable data={activityTableData} />
+          <>
+            <ActivityTable data={activityTableData} />
+            {filteredActivities.length > 0 && (
+              <ActivitySummary
+                month={activityTableData.month}
+                activities={
+                  filteredActivities[0].frontmatter.activities || []
+                }
+              />
+            )}
+          </>
         ) : (
           <div>활동 데이터가 없습니다.</div>
         )}
