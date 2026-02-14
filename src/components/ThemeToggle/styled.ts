@@ -4,30 +4,24 @@ import { MOBILE_MEDIA_QUERY } from '@/src/styles/const';
 
 export const Wrapper = styled.div<{ isDark: boolean }>`
   cursor: pointer;
-  position: fixed;
-  z-index: 1000;
-  top: 0;
-  right: 0;
+  position: relative;
   background-color: ${({ theme }) => theme.color.black40};
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  top: 20px;
-  right: 20px;
 
   .theme-icon {
     color: ${({ theme }) => theme.color.white100};
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 
   @media ${MOBILE_MEDIA_QUERY} {
-    top: 50px;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     .theme-icon {
       width: 15px;
       height: 15px;

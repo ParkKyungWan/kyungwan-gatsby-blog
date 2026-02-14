@@ -50,11 +50,12 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
             more: <a href='/posts'>전체보기</a>,
           }}
         >
+          {/*
           <CategoryFilter
             categories={categories}
             selectedCategory={selectedCategory}
             onCategoryClick={handleCategoryClick}
-          />
+          /> */}
           <PostList posts={posts} />
         </Section>
 
