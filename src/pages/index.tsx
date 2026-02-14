@@ -44,7 +44,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
   const allPosts = data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node));
   const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(allPosts);
   const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
-  const posts = filteredPosts.slice(0, 2);
+  const posts = filteredPosts.slice(0, 3);
 
   // 가장 최근 월의 activity 데이터 변환
   const activities = data.activities.edges.map(({ node }) => node);

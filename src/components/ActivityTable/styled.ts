@@ -8,6 +8,7 @@ export const Wrapper = styled.div`
   overflow-x: auto;
   overflow-y: visible;
   padding: 24px 24px;
+  gap: 6px;
   background-color: transparent;
   border: 1px solid ${({ theme }) => 
     theme.color.black100 === '#0F1010' 
@@ -15,40 +16,28 @@ export const Wrapper = styled.div`
       : 'rgba(255, 255, 255, 0.12)'};
   border-radius: 8px;
   
-  /* 스크롤바 스타일 (필요할 때만 표시) */
+  /* 스크롤바 스타일 - 테마 토큰 사용 (Safari 다크모드 대응) */
   &::-webkit-scrollbar {
     height: 8px;
   }
   
   &::-webkit-scrollbar-track {
-    background: ${({ theme }) => 
-      theme.color.black100 === '#0F1010' 
-        ? 'rgba(0, 0, 0, 0.05)' 
-        : 'rgba(255, 255, 255, 0.05)'};
+    background: ${({ theme }) => theme.color.gray10};
     border-radius: 4px;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => 
-      theme.color.black100 === '#0F1010' 
-        ? 'rgba(0, 0, 0, 0.2)' 
-        : 'rgba(255, 255, 255, 0.2)'};
+    background: ${({ theme }) => theme.color.gray40};
     border-radius: 4px;
   }
   
   &::-webkit-scrollbar-thumb:hover {
-    background: ${({ theme }) => 
-      theme.color.black100 === '#0F1010' 
-        ? 'rgba(0, 0, 0, 0.3)' 
-        : 'rgba(255, 255, 255, 0.3)'};
+    background: ${({ theme }) => theme.color.gray60};
   }
   
   /* Firefox */
   scrollbar-width: thin;
-  scrollbar-color: ${({ theme }) => 
-    theme.color.black100 === '#0F1010' 
-      ? 'rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05)' 
-      : 'rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05)'};
+  scrollbar-color: ${({ theme }) => theme.color.gray40} ${({ theme }) => theme.color.gray10};
 `;
 
 export const Row = styled.div`
@@ -65,7 +54,7 @@ export const Row = styled.div`
 `;
 
 export const Emoji = styled.span`
-  height: 24px;
+  height: 16px;
   display: flex;
   align-items: center;
   font-size: 24px;
@@ -76,15 +65,15 @@ export const Emoji = styled.span`
 export const SquaresContainer = styled.div`
   display: flex;
   flex-direction: row;
-  gap: 4px;
+  gap: 2px;
   align-items: center;
   flex-shrink: 0;
 `;
 
 export const Square = styled.div<{ color: string }>`
-  width: 16px;
-  height: 24px;
-  border-radius: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
   background-color: ${({ color }) => color};
   flex-shrink: 0;
 `;
