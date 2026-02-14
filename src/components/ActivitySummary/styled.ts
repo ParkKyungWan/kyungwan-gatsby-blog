@@ -30,6 +30,7 @@ export const SummaryList = styled.div`
 
 export const SummaryItem = styled.div`
   font-size: 14px;
+  line-height: 1.6;
   color: ${({ theme }) => theme.color.black100};
   opacity: 0.55;
 `;
