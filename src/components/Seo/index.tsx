@@ -25,7 +25,8 @@ const Seo: React.FC<SeoProps> = ({ description, title }) => {
   );
 
   const metaDescription = description || site.siteMetadata.description;
-  const ogImageUrl = `${site.siteMetadata.siteUrl}/og-image.png`;
+  // OG 이미지 바꿨을 때 카톡/페이스북 미리보기 갱신: v 값을 올린 뒤 배포 (캐시 무효화)
+  const ogImageUrl = `${site.siteMetadata.siteUrl}/og-image.png?v=2`;
 
   return (
     <Helmet

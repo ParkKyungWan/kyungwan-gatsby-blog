@@ -7,7 +7,7 @@ export const Wrapper = styled.div`
   flex-direction: column;
   overflow-x: auto;
   overflow-y: visible;
-  padding: 24px 24px;
+  padding: 18px 18px;
   gap: 6px;
   background-color: transparent;
   border: 1px solid ${({ theme }) => 
