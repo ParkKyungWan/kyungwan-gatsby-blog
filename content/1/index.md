@@ -1,8 +1,8 @@
 ---
 emoji: 💻
 title: '블로그를 시작하며'
-date: '2025-02-15'
-categories: featured-기록
+date: '2025-02-14'
+categories: featured-작업
 ---
 
 ## 블로그 정착기
