@@ -1,9 +1,13 @@
 import { css, Global, Theme } from '@emotion/react';
 import React from 'react';
 
-import { MOBILE_MEDIA_QUERY } from './const';
+import { headerHeight, MOBILE_MEDIA_QUERY } from './const';
 
 const style = (theme: Theme) => css`
+  :root {
+    --header-height: ${headerHeight};
+  }
+
   * {
     box-sizing: border-box;
     appearance: none;

@@ -1,7 +1,7 @@
 ---
 emoji: ☕
 title: '카페인 중독자의 드립 커피 레시피'
-date: '2025-02-15'
+date: '2026-02-15'
 categories: featured-취향
 ---
 

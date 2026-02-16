@@ -1,6 +1,16 @@
 $content-max-width: 720px;
 $content-image-max-height: 380px;
 
+/* 목차/앵커 클릭 시 스크롤할 때 헤더에 가리지 않도록 여백 (const.ts headerHeight + 12px) */
+.markdown h1[id],
+.markdown h2[id],
+.markdown h3[id],
+.markdown h4[id],
+.markdown h5[id],
+.markdown h6[id] {
+  scroll-margin-top: calc(var(--header-height) + 12px);
+}
+
 .markdown .octicon {
   display: inline-block;
   fill: currentColor;
