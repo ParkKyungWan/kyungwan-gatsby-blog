@@ -66,8 +66,10 @@ export const FloatingImage = styled.img<FloatingImageProps>`
   right: ${({ position }) => position.right};
   top: ${({ position }) => position.top};
   bottom: ${({ position }) => position.bottom};
+  will-change: transform;
   animation-name: ${({ animation }) => animation};
   animation-duration: 20s;
+  animation-delay: -1.5s;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   width: 104px;
