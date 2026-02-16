@@ -10,10 +10,7 @@ export const Wrapper = styled.div`
   padding: 18px 18px;
   gap: 6px;
   background-color: transparent;
-  border: 1px solid ${({ theme }) => 
-    theme.color.black100 === '#0F1010' 
-      ? 'rgba(0, 0, 0, 0.12)' 
-      : 'rgba(255, 255, 255, 0.12)'};
+  border: 1px solid ${({ theme }) => theme.color.gray20};
   border-radius: 8px;
   
   /* 스크롤바 스타일 - 테마 토큰 사용 (Safari 다크모드 대응) */
