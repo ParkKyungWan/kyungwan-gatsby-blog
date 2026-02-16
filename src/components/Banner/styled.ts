@@ -26,8 +26,10 @@ export const Inner = styled.div`
   height: 100%;
   z-index: -1;
 
+  /* 100vw 대신 100% 사용: 모바일에서 뒤로가기(bfcache) 시 100vw가
+   * 뷰포트와 어긋나 스티커 위치가 잘못 계산되는 현상 방지 */
   @media ${MOBILE_MEDIA_QUERY} {
-    width: 100vw;
+    width: 100%;
   }
 `;
 
