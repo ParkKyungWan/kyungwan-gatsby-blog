@@ -23,6 +23,10 @@ activities:
   - day: 17
     emoji: [🏃]
     level: [2]
-    summary: ["🏃 트레드밀 30분"]
+    summary: ["🏃 러닝머신 30분"]
+  - day: 17
+    emoji: [🧗‍♂️]
+    level: [1]
+    summary: ["🏃 클라이밍 2시간"]
   
 ---
