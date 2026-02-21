@@ -28,5 +28,13 @@ activities:
     emoji: [🧗‍♂️]
     level: [1]
     summary: ["🏃 클라이밍 2시간"]
+  - day: 18
+    emoji: [🧗‍♂️]
+    level: [1]
+    summary: ["🏃 클라이밍 2시간"]
+  - day: 20
+    emoji: [🧗‍♂️,🏃]
+    level: [1]
+    summary: ["🧗‍♂️ 태우와 헬스장 루틴 40분", "🏃 인클라인 짧게 12분"]
   
 ---
