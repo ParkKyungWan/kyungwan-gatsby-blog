@@ -20,5 +20,21 @@ activities:
     emoji: [🧗‍♂️,🧑‍💻]
     level: [2,1]
     summary: ["🧗‍♂️ 클라이밍 2시간+마무리운동(풀업/행잉레그레이즈/친업/푸시업)","🧑‍💻 블로그 코딩 1시간(버그 수정, 마무리)"]
+  - day: 17
+    emoji: [🏃]
+    level: [2]
+    summary: ["🏃 러닝머신 30분"]
+  - day: 17
+    emoji: [🧗‍♂️]
+    level: [1]
+    summary: ["🏃 클라이밍 2시간"]
+  - day: 18
+    emoji: [🧗‍♂️]
+    level: [1]
+    summary: ["🏃 클라이밍 2시간"]
+  - day: 20
+    emoji: [🧗‍♂️,🏃]
+    level: [1]
+    summary: ["🧗‍♂️ 태우와 헬스장 루틴 40분", "🏃 인클라인 짧게 12분"]
   
 ---
