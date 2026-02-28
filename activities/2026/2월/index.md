@@ -57,5 +57,16 @@ activities:
     emoji: [🧑‍💻]
     level: [1]
     summary: ["🧑‍💻 입사 지원용 이력서 작성"]
+
+  - day: 26
+    emoji: [🏃]
+    level: [2]
+    summary: ["🏃 봉제산-청량산 코스 1시간 반"]
+
+  - day: 27
+    emoji: [🧗‍♂️]
+    level: [2]
+    summary: ["🧗‍♂️ 영등숲 4시간 반"]
+
   
 ---
