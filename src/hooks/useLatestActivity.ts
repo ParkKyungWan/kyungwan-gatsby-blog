@@ -33,7 +33,7 @@ const useLatestActivity = ({ activities }: UseLatestActivityProps): ActivityTabl
       const aMonth = a.frontmatter.month || 0;
       const bMonth = b.frontmatter.month || 0;
       if (aYear !== bYear) return bYear - aYear;
-      return bMonth - bMonth;
+      return bMonth - aMonth;
     });
 
     const latestActivity = sortedActivities[0];
