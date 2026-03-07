@@ -62,7 +62,7 @@ export const Emoji = styled.span`
 export const SquaresContainer = styled.div`
   display: flex;
   flex-direction: row;
-  gap: 2px;
+  gap: 2.5px;
   align-items: center;
   flex-shrink: 0;
 `;
