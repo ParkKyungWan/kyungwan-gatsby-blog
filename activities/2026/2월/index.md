@@ -68,5 +68,10 @@ activities:
     level: [2]
     summary: ["🧗‍♂️ 영등숲 4시간 반"]
 
+  - day: 28
+    emoji: [🏃,🧑‍💻]
+    level: [2,1]
+    summary: ["🏃 러닝 6.33km","🧑‍💻 코딩테스트 연습 1시간"]
+
   
 ---
