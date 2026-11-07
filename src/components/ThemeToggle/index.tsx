@@ -1,5 +1,5 @@
 import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
-import { ThemeManagerContext } from 'gatsby-emotion-dark-mode';
+import { ThemeManagerContext } from '@/src/context/theme';
 import { useContext } from 'react';
 
 import * as S from './styled';

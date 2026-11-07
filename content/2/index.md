@@ -2,7 +2,9 @@
 emoji: ☕
 title: '카페인 중독자의 드립 커피 레시피'
 date: '2026-02-15'
-categories: featured-취향
+categories: ["취향"]
+featured: true
+draft: false
 ---
 
 ## 유튜브 채널 추천

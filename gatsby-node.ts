@@ -54,11 +54,7 @@ export const createPages: GatsbyNode['createPages'] = async ({ graphql, actions,
     };
   } = await graphql(`
     {
-      allMarkdownRemark(
-        sort: { order: DESC, fields: [frontmatter___date] }
-        limit: 1000
-        filter: { fileAbsolutePath: { regex: "/\\\\/content\\\\//" } }
-      ) {
+      allMarkdownRemark(sort: { frontmatter: { date: DESC } }, filter: { fields: { isPost: { eq: true } } }) {
         edges {
           node {
             id
@@ -89,7 +85,21 @@ export const onCreateNode: GatsbyNode['onCreateNode'] = ({ node, actions, getNod
   const { createNodeField } = actions;
 
   if (node.internal.type === `MarkdownRemark`) {
+    const parent = getNode(node.parent as string);
+    createNodeField({ node, name: 'isPost', value: parent?.sourceInstanceName === 'blog' });
     const slug = createFilePath({ node, getNode, basePath: `content` });
     createNodeField({ node, name: `slug`, value: slug });
   }
+};
+
+export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] = ({ actions }) => {
+  actions.createTypes(`
+    type MarkdownRemark implements Node { frontmatter: Frontmatter! fields: MarkdownFields! }
+    type MarkdownFields { slug: String! isPost: Boolean! }
+    type Frontmatter { title: String date: Date @dateformat categories: [String!] draft: Boolean featured: Boolean emoji: String }
+  `);
+};
+
+export const onPreInit: GatsbyNode['onPreInit'] = () => {
+  require('./scripts/content.cjs').validateAll();
 };

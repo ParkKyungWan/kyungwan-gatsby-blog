@@ -17,7 +17,7 @@ export default class PostClass {
     const { slug } = fields;
     const { emoji, categories, title, author, date } = frontmatter;
 
-    const categoryArr = categories ? categories.split(' ') : [];
+    const categoryArr = categories || [];
 
     this.id = id;
     this.excerpt = excerpt;
@@ -29,7 +29,7 @@ export default class PostClass {
     this.date = date;
     this.categories = categoryArr;
     this.filteredCategories = categoryArr.map((category) => {
-      return category.replace('featured-', '').trim();
+      return category;
     });
   }
 }

@@ -19,10 +19,10 @@ const PostNavigator: React.FC<PostNavigatorProps> = ({ prevPost, nextPost }) => 
             <S.Title>{nextPost.title}</S.Title>
           </S.PostCard>
         ) : (
-          <S.PostCard className='prev'>
+          <S.EmptyCard className='prev'>
             <S.Direction>이전 글</S.Direction>
             <S.Title>이전 글이 없습니다.</S.Title>
-          </S.PostCard>
+          </S.EmptyCard>
         )}
       </div>
       <div>
@@ -32,10 +32,10 @@ const PostNavigator: React.FC<PostNavigatorProps> = ({ prevPost, nextPost }) => 
             <S.Title>{prevPost.title}</S.Title>
           </S.PostCard>
         ) : (
-          <S.PostCard className='prev'>
+          <S.EmptyCard className='prev'>
             <S.Direction>다음 글</S.Direction>
             <S.Title>다음 글이 없습니다.</S.Title>
-          </S.PostCard>
+          </S.EmptyCard>
         )}
       </div>
     </S.Wrapper>

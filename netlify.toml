@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = "public"
+
+[build.environment]
+  NODE_VERSION = "22.23.4"
+  NPM_VERSION = "10.9.4"

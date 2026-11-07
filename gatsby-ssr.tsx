@@ -1,3 +1,6 @@
+import React from 'react';
+import type { GatsbySSR } from 'gatsby';
+import { ThemeManagerProvider } from './src/context/theme';
 import { RenderBodyArgs } from 'gatsby';
 
 const GmarketFontFaceCSS = `
@@ -22,7 +25,7 @@ const GmarketFontFaceCSS = `
 `;
 
 export const onRenderBody = ({ setHtmlAttributes, setHeadComponents }: RenderBodyArgs) => {
-  setHtmlAttributes({ lang: `kr` });
+  setHtmlAttributes({ lang: `ko` });
   setHeadComponents([
     // 폰트 도메인 미리 연결해 첫 요청 지연 감소
     <link rel='preconnect' href='https://cdn.jsdelivr.net' crossOrigin='anonymous' key='preconnect-jsdelivr' />,
@@ -56,3 +59,7 @@ export const onRenderBody = ({ setHtmlAttributes, setHeadComponents }: RenderBod
     />,
   ]);
 };
+
+export const wrapRootElement: GatsbySSR['wrapRootElement'] = ({ element }) => (
+  <ThemeManagerProvider>{element}</ThemeManagerProvider>
+);

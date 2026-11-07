@@ -2,7 +2,7 @@ import './style.scss';
 
 import { ThemeProvider } from '@emotion/react';
 import { graphql, useStaticQuery } from 'gatsby';
-import { ThemeManagerContext } from 'gatsby-emotion-dark-mode';
+import { ThemeManagerContext } from '@/src/context/theme';
 import { useContext } from 'react';
 
 import Footer from '../components/Footer';

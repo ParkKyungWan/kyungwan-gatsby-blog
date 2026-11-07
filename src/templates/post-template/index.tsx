@@ -22,7 +22,7 @@ const PostTemplate: React.FC<PostTemplateProps> = ({ location, data }) => {
 
   return (
     <Layout location={location} hasBanner={false}>
-      <Seo title={`경완 | ${curPost?.title}`} description={curPost?.excerpt} />
+      <Seo title={`경완 | ${curPost?.title}`} description={curPost?.excerpt} pathname={curPost.slug} article />
       <S.Wrapper>
         <PostHeader post={curPost} />
         <S.PostContent>

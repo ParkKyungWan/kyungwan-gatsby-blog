@@ -1,4 +1,4 @@
-import { graphql, useStaticQuery } from 'gatsby';
+import { graphql, useStaticQuery, withPrefix } from 'gatsby';
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import { Helmet } from 'react-helmet';
@@ -7,9 +7,11 @@ type SeoProps = {
   description?: string;
   title: string;
   children?: React.ReactNode;
+  pathname?: string;
+  article?: boolean;
 };
 
-const Seo: React.FC<SeoProps> = ({ description, title }) => {
+const Seo: React.FC<SeoProps> = ({ description, title, pathname, article = false }) => {
   const { site } = useStaticQuery(
     graphql`
       query {
@@ -18,6 +20,7 @@ const Seo: React.FC<SeoProps> = ({ description, title }) => {
             title
             description
             siteUrl
+            language
           }
         }
       }
@@ -28,11 +31,22 @@ const Seo: React.FC<SeoProps> = ({ description, title }) => {
   // OG 이미지 바꿨을 때 카톡/페이스북 미리보기 갱신: v 값을 올린 뒤 배포 (캐시 무효화)
   const ogImageUrl = `${site.siteMetadata.siteUrl}/og-image.png?v=2`;
 
+  const canonical = new URL(pathname || '/', site.siteMetadata.siteUrl).href;
+
   return (
     <Helmet
-      htmlAttributes={{ lang: 'en' }}
+      htmlAttributes={{ lang: site.siteMetadata.language }}
       title={title}
       defaultTitle={site.siteMetadata.title}
+      link={[
+        { rel: 'canonical', href: canonical },
+        {
+          rel: 'alternate',
+          type: 'application/rss+xml',
+          title: `${site.siteMetadata.title} RSS`,
+          href: withPrefix('/rss.xml'),
+        },
+      ]}
       meta={[
         {
           property: `og:title`,
@@ -52,11 +66,11 @@ const Seo: React.FC<SeoProps> = ({ description, title }) => {
         },
         {
           property: 'og:url',
-          content: site.siteMetadata.siteUrl,
+          content: canonical,
         },
         {
           property: `og:type`,
-          content: `website`,
+          content: article ? 'article' : 'website',
         },
         {
           property: `og:image`,

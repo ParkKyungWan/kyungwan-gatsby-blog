@@ -23,7 +23,7 @@ const Posts: React.FC<PostsProps> = ({ location, data }) => {
 
   return (
     <Layout location={location} hasBanner={false}>
-      <Seo title='경완 | Posts' />
+      <Seo pathname={location.pathname} title='경완 | Posts' />
       <Section
         header={{
           emoji: '🏃‍♂️',
@@ -46,10 +46,7 @@ export default Posts;
 
 export const pageQuery = graphql`
   query {
-    allMarkdownRemark(
-      filter: { fileAbsolutePath: { regex: "/content/" } }
-      sort: { fields: frontmatter___date, order: DESC }
-    ) {
+    allMarkdownRemark(filter: { fields: { isPost: { eq: true } } }, sort: { frontmatter: { date: DESC } }) {
       edges {
         node {
           id

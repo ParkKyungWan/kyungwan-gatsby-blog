@@ -65,7 +65,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
     <>
       <Banner />
       <Layout location={location} hasBanner={true}>
-        <Seo title='경완' description="KyungWan's Blog" />
+        <Seo pathname={location.pathname} title='경완' description="KyungWan's Blog" />
         {/* 게시글 리스트 */}
         <Section
           header={{
@@ -93,13 +93,8 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
             more: <a href='/activity'>전체보기</a>,
           }}
         >
-          {latestActivityData ? (
-            <ActivityTable data={latestActivityData} />
-          ) : (
-            <div>활동 데이터가 없습니다.</div>
-          )}
+          {latestActivityData ? <ActivityTable data={latestActivityData} /> : <div>활동 데이터가 없습니다.</div>}
         </Section>
-        
 
         {/* 취미 리스트 
         <Section
@@ -127,10 +122,7 @@ export default Home;
 
 export const pageQuery = graphql`
   query {
-    allMarkdownRemark(
-      filter: { fileAbsolutePath: { regex: "/content/" } }
-      sort: { fields: frontmatter___date, order: DESC }
-    ) {
+    allMarkdownRemark(filter: { fields: { isPost: { eq: true } } }, sort: { frontmatter: { date: DESC } }) {
       edges {
         node {
           id
@@ -149,7 +141,7 @@ export const pageQuery = graphql`
     }
     activities: allMarkdownRemark(
       filter: { fileAbsolutePath: { regex: "/activities/" } }
-      sort: { fields: [frontmatter___year, frontmatter___month], order: DESC }
+      sort: [{ frontmatter: { year: DESC } }, { frontmatter: { month: DESC } }]
     ) {
       edges {
         node {

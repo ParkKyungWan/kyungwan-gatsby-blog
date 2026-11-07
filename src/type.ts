@@ -29,7 +29,9 @@ export type Frontmatter = {
   author: string;
   date: string;
   emoji: string;
-  categories: string;
+  categories: string[];
+  draft?: boolean;
+  featured?: boolean;
 };
 
 export type Fields = {
