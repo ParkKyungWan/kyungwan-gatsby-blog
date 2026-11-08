@@ -25,7 +25,6 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
   const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(allPosts);
   const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
   const posts = filteredPosts.slice(0, 3);
-  const showSamplePreview = process.env.NODE_ENV === 'development' && posts.length < 3;
 
   const renderContentH = () => {
     switch (selectedCategoryH) {
@@ -47,7 +46,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
           header={{
             more: (
               <PostStyles.PostCount>
-                <strong>{allPosts.length + Number(showSamplePreview)}</strong>개의 글
+                <strong>{allPosts.length}</strong>개의 글
               </PostStyles.PostCount>
             ),
           }}
@@ -58,7 +57,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
             selectedCategory={selectedCategory}
             onCategoryClick={handleCategoryClick}
           /> */}
-          <PostList posts={posts} samplePreview={showSamplePreview} />
+          <PostList posts={posts} />
           <PostStyles.MoreLink to='/posts/' aria-label='모든 게시글 보기'>
             더보기
           </PostStyles.MoreLink>
