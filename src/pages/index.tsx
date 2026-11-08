@@ -4,39 +4,19 @@ import React from 'react';
 import Banner from '../components/Banner';
 import CategoryFilter from '../components/CategoryFilter';
 import PostList from '../components/PostList';
+import * as PostStyles from '../components/PostList/styled';
 import Section from '../components/Section';
 import Seo from '../components/Seo';
 import useHobbiesFilter from '../hooks/useHobbiesFilter';
-import useLatestActivity from '../hooks/useLatestActivity';
 import usePostsFilter from '../hooks/usePostsFilter';
 import Layout from '../layout';
 import PostClass from '../models/post';
 import { AllMarkdownRemark } from '../type';
-import ActivityTable from '../components/ActivityTable';
 
 type HomeProps = {
   location: Location;
   data: {
     allMarkdownRemark: AllMarkdownRemark;
-    activities: {
-      edges: Array<{
-        node: {
-          id: string;
-          frontmatter: {
-            year?: number;
-            month?: number;
-            day?: number;
-            emojis?: string[];
-            activities?: Array<{
-              day: number;
-              emoji: string | string[];
-              level: number | number[];
-              summary?: string | string[];
-            }>;
-          };
-        };
-      }>;
-    };
   };
 };
 
@@ -45,10 +25,6 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
   const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(allPosts);
   const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
   const posts = filteredPosts.slice(0, 2);
-
-  // 가장 최근 월의 activity 데이터 변환
-  const activities = data.activities.edges.map(({ node }) => node);
-  const latestActivityData = useLatestActivity({ activities });
 
   const renderContentH = () => {
     switch (selectedCategoryH) {
@@ -63,16 +39,16 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
 
   return (
     <>
-      <Banner />
-      <Layout location={location} hasBanner={true}>
-        <Seo pathname={location.pathname} title='경완' description="KyungWan's Blog" />
+      <Layout location={location} banner={<Banner />}>
+        <Seo pathname={location.pathname} title='ruddhks.my' description="KyungWan's Blog" />
         {/* 게시글 리스트 */}
         <Section
           header={{
-            emoji: '🏃‍♂️',
-            kr: '게시글',
-            en: 'Posts',
-            more: <a href='/posts'>전체보기</a>,
+            more: (
+              <PostStyles.PostCount>
+                <strong>{allPosts.length}</strong>개의 글
+              </PostStyles.PostCount>
+            ),
           }}
         >
           {/*
@@ -82,18 +58,9 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
             onCategoryClick={handleCategoryClick}
           /> */}
           <PostList posts={posts} />
-        </Section>
-
-        {/* 활동 리스트 */}
-        <Section
-          header={{
-            emoji: '📋',
-            kr: '활동',
-            en: 'Activity',
-            more: <a href='/activity'>전체보기</a>,
-          }}
-        >
-          {latestActivityData ? <ActivityTable data={latestActivityData} /> : <div>활동 데이터가 없습니다.</div>}
+          <PostStyles.MoreLink to='/posts/' aria-label='모든 게시글 보기'>
+            더보기
+          </PostStyles.MoreLink>
         </Section>
 
         {/* 취미 리스트 
@@ -135,28 +102,6 @@ export const pageQuery = graphql`
           }
           fields {
             slug
-          }
-        }
-      }
-    }
-    activities: allMarkdownRemark(
-      filter: { fileAbsolutePath: { regex: "/activities/" } }
-      sort: [{ frontmatter: { year: DESC } }, { frontmatter: { month: DESC } }]
-    ) {
-      edges {
-        node {
-          id
-          frontmatter {
-            year
-            month
-            day
-            emojis
-            activities {
-              day
-              emoji
-              level
-              summary
-            }
           }
         }
       }

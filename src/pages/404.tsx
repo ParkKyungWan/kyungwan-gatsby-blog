@@ -14,7 +14,7 @@ type NotFoundPageProps = {
 
 const NotFoundPage: React.FC<NotFoundPageProps> = ({ location }) => {
   return (
-    <Layout location={location} hasBanner={false}>
+    <Layout location={location}>
       <Seo pathname='/404/' title='404: Not Found' />
       <h1>404: Not Found</h1>
       <p>You just hit a route that doesn&#39;t exist... the sadness.</p>

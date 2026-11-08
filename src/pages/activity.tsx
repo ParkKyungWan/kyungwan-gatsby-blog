@@ -96,8 +96,8 @@ const Activity: React.FC<ActivityProps> = ({ location, data }) => {
   }, [filteredActivities]);
 
   return (
-    <Layout location={location} hasBanner={false}>
-      <Seo pathname={location.pathname} title='경완 | Activity' />
+    <Layout location={location}>
+      <Seo pathname={location.pathname} title='ruddhks.my | Activity' />
       <Section
         header={{
           emoji: '📋',

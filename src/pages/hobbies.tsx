@@ -38,8 +38,8 @@ const Hobbies: React.FC<HobbiesProps> = ({ location }) => {
   };
 
   return (
-    <Layout location={location} hasBanner={false}>
-      <Seo pathname={location.pathname} title='경완 | Hobbies' />
+    <Layout location={location}>
+      <Seo pathname={location.pathname} title='ruddhks.my | Hobbies' />
       <Section
         header={{
           emoji: '🍷',

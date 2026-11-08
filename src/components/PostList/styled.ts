@@ -85,3 +85,42 @@ export const Excerpt = styled.span`
   font-family: 'Noto Sans KR', sans-serif;
   padding: 4px 0px 7px 0px;
 `;
+
+export const PostCount = styled.span`
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: ${({ theme }) => theme.color.gray60};
+  white-space: nowrap;
+
+  strong {
+    font-weight: inherit;
+    color: ${({ theme }) => theme.color.black100};
+  }
+`;
+
+export const MoreLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 8px;
+  padding: 14px 18px;
+  border: 1px solid ${({ theme }) => theme.color.gray20};
+  border-radius: 8px;
+  background-color: ${({ theme }) => theme.color.gray10};
+  font-size: 14px;
+  color: ${({ theme }) => theme.color.gray80};
+  transition: background-color 150ms ease, color 150ms ease;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.color.gray20};
+    color: ${({ theme }) => theme.color.black100};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.color.gray80};
+    outline-offset: 3px;
+  }
+`;

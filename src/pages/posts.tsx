@@ -22,8 +22,8 @@ const Posts: React.FC<PostsProps> = ({ location, data }) => {
   const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(posts);
 
   return (
-    <Layout location={location} hasBanner={false}>
-      <Seo pathname={location.pathname} title='경완 | Posts' />
+    <Layout location={location}>
+      <Seo pathname={location.pathname} title='ruddhks.my | Posts' />
       <Section
         header={{
           emoji: '🏃‍♂️',

@@ -1,13 +1,6 @@
 import styled from '@emotion/styled';
 
-import {
-  bannerHeight,
-  contentMaxWidth,
-  footerHeight,
-  headerHeight,
-  m_bannerHeight,
-  MOBILE_MEDIA_QUERY,
-} from '../styles/const';
+import { contentMaxWidth, footerHeight, headerHeight, MOBILE_MEDIA_QUERY } from '../styles/const';
 
 export const Wrapper = styled.div`
   overflow-y: scroll;
@@ -28,15 +21,7 @@ export const HeaderPadding = styled.div`
   content: '';
 `;
 
-export const BannerPadding = styled.div`
-  padding-top: ${bannerHeight};
-  content: '';
-  @media ${MOBILE_MEDIA_QUERY} {
-    padding-top: ${m_bannerHeight};
-  }
-`;
-
-export const ContentWrapper = styled.div`
+export const ContentWrapper = styled.div<{ afterBanner: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -46,6 +31,7 @@ export const ContentWrapper = styled.div`
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding: 36px 12px;
+  padding-top: ${({ afterBanner }) => (afterBanner ? '8px' : '36px')};
   background-color: ${({ theme }) => theme.color.white100};
   box-shadow: 0 6px 12px rgb(0, 0, 0, 0.04), 0 -6px 12px rgb(0, 0, 0, 0.04);
 

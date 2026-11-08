@@ -14,7 +14,7 @@ const style = (theme: Theme) => css`
   }
 
   html {
-    font-family: 'GmarketSansMedium';
+    font-family: 'GmarketSansMedium', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     width: 100%;
     height: 100%;
     overflow-y: scroll;

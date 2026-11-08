@@ -7,18 +7,17 @@ import { useContext } from 'react';
 
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import ThemeToggle from '../components/ThemeToggle';
 import { darkTheme, lightTheme } from '../styles/const';
 import GlobalStyle from '../styles/GlobalStyle';
 import * as S from './styled';
 
 type LayoutProps = {
   location: Location;
-  hasBanner: boolean;
+  banner?: React.ReactNode;
   children: React.ReactNode;
 };
 
-const Layout: React.FC<LayoutProps> = ({ location, hasBanner, children }) => {
+const Layout: React.FC<LayoutProps> = ({ location, banner, children }) => {
   const theme = useContext(ThemeManagerContext);
 
   const data = useStaticQuery(graphql`
@@ -37,8 +36,8 @@ const Layout: React.FC<LayoutProps> = ({ location, hasBanner, children }) => {
       <GlobalStyle />
       <S.Wrapper>
         <S.HeaderPadding />
-        {hasBanner && <S.BannerPadding />}
-        <S.ContentWrapper>
+        {banner}
+        <S.ContentWrapper afterBanner={Boolean(banner)}>
           {location && <Header location={location} title={title} />}
           <S.Content>{children}</S.Content>
         </S.ContentWrapper>

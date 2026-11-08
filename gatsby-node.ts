@@ -103,3 +103,10 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
 export const onPreInit: GatsbyNode['onPreInit'] = () => {
   require('./scripts/content.cjs').validateAll();
 };
+
+// Keep the Activity page implementation and data for later use, without publishing its route.
+export const onCreatePage: GatsbyNode['onCreatePage'] = ({ page, actions }) => {
+  if (page.path.replace(/\/$/, '') === '/activity') {
+    actions.deletePage(page);
+  }
+};
