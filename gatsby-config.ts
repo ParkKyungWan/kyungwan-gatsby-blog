@@ -3,40 +3,22 @@
 import type { GatsbyConfig } from 'gatsby';
 
 import siteMetadata from './gatsby-site-meta-data';
-import { darkTheme, lightTheme } from './src/styles/const';
+
+const { draftIgnores } = require('./scripts/content.cjs');
 
 const config: GatsbyConfig = {
-  flags: {
-    DEV_SSR: true,
-  },
   siteMetadata,
   plugins: [
     `gatsby-plugin-typescript`,
     `gatsby-plugin-emotion`,
     `gatsby-plugin-image`,
     `gatsby-plugin-sitemap`,
-    `gatsby-plugin-advanced-sitemap`,
     `gatsby-plugin-offline`,
     `gatsby-plugin-react-helmet`,
     `gatsby-plugin-sass`,
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
     `gatsby-plugin-svgr`,
-    // Google Adsense
-    {
-      resolve: `gatsby-plugin-google-adsense`,
-      options: {
-        publisherId: `ca-pub-XXXXXXXXXXXX`,
-      },
-    },
-    // Google Analytics
-    {
-      resolve: `gatsby-plugin-gtag`,
-      options: {
-        trackingId: `G-XXXXXXXX`,
-        head: true,
-      },
-    },
     {
       resolve: `gatsby-plugin-feed`,
       options: {
@@ -70,7 +52,8 @@ const config: GatsbyConfig = {
             query: `
               {
                 allMarkdownRemark(
-                  sort: { order: DESC, fields: [frontmatter___date] },
+                  sort: { frontmatter: { date: DESC } }
+                  filter: { fields: { isPost: { eq: true } } }
                 ) {
                   nodes {
                     excerpt
@@ -87,18 +70,10 @@ const config: GatsbyConfig = {
               }
             `,
             output: '/rss.xml',
-            title: 'jeong-min.com RSS Feed',
-            match: '^/blog/',
-            link: 'https://feeds.feedburner.com/gatsby/blog',
+            title: `${siteMetadata.title} RSS`,
+            match: '.*',
           },
         ],
-      },
-    },
-    {
-      resolve: `gatsby-emotion-dark-mode`,
-      options: {
-        light: lightTheme,
-        dark: darkTheme,
       },
     },
     {
@@ -115,6 +90,7 @@ const config: GatsbyConfig = {
       options: {
         path: `${__dirname}/content`,
         name: `blog`,
+        ignore: draftIgnores(),
       },
     },
     {
@@ -205,7 +181,7 @@ const config: GatsbyConfig = {
         short_name: siteMetadata.title,
         description: siteMetadata.description,
         start_url: `/`,
-        lang: `en`,
+        lang: siteMetadata.language,
         display: `standalone`,
         icon: `static/favicon.png`,
       },

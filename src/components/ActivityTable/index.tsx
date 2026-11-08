@@ -1,6 +1,6 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { ThemeProvider, useTheme } from '@emotion/react';
-import { ThemeManagerContext } from 'gatsby-emotion-dark-mode';
+import { ThemeManagerContext } from '@/src/context/theme';
 
 import * as S from './styled';
 
@@ -83,4 +83,3 @@ const ActivityTable: React.FC<ActivityTableProps> = ({ data }) => {
 };
 
 export default ActivityTable;
-

@@ -14,10 +14,11 @@ export const Wrapper = styled.div`
   z-index: -1;
   background-color: ${({ theme }) => theme.color.white99};
   font-family: GmarketSansLight;
+  font-size: 12px;
+  line-height: 1.5;
 
   @media ${MOBILE_MEDIA_QUERY} {
-    font-size: 14px;
-    height: ${(footerHeight / 2) * 1.5}px;
+    display: none;
   }
 `;
 

@@ -30,22 +30,23 @@ export const Emoji = styled.div`
 `;
 
 export const Kr = styled.span`
-  font-size: 16px;
+  font-size: 14px;
   margin-right: 4px;
 `;
 
 export const En = styled.span`
-  font-size: 16px;
+  font-size: 14px;
   color: ${({ theme }) => theme.color.gray60};
 `;
 
 export const MoreWrapper = styled.div`
+  margin-left: auto;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   a {
-    font-size: 16px;
+    font-size: 14px;
     color: ${({ theme }) => theme.color.gray60};
     text-decoration: underline;
     text-underline-offset: 3px;

@@ -37,15 +37,8 @@ type ActivityProps = {
 
 const Activity: React.FC<ActivityProps> = ({ location, data }) => {
   const activities = data.allMarkdownRemark.edges.map(({ node }) => node);
-  const {
-    years,
-    months,
-    filteredActivities,
-    selectedMonth,
-    selectedYear,
-    handleMonthClick,
-    handleYearChange,
-  } = useActivityFilter(activities);
+  const { years, months, filteredActivities, selectedMonth, selectedYear, handleMonthClick, handleYearChange } =
+    useActivityFilter(activities);
 
   // ActivityTable 형식으로 데이터 변환
   const activityTableData = useMemo<ActivityTableData | null>(() => {
@@ -62,18 +55,14 @@ const Activity: React.FC<ActivityProps> = ({ location, data }) => {
 
       // dayActivities에서 해당 이모지의 데이터 찾아서 채우기
       // 같은 날에 같은 이모지가 여러 번 나올 수 있으므로, 가장 높은 레벨을 사용
-      (dayActivities || []).forEach((activity: {
-        day: number;
-        emoji: string | string[];
-        level: number | number[];
-      }) => {
+      (dayActivities || []).forEach((activity: { day: number; emoji: string | string[]; level: number | number[] }) => {
         const activityEmojis = Array.isArray(activity.emoji) ? activity.emoji : [activity.emoji];
         const activityLevels = Array.isArray(activity.level) ? activity.level : [activity.level];
 
         // 이모지와 레벨 배열의 길이가 맞는지 확인
         if (activityEmojis.length === activityLevels.length && activity.day >= 1 && activity.day <= day) {
           const dayIndex = activity.day - 1; // day는 1부터 시작하므로 -1
-          
+
           // 해당 이모지의 레벨 찾기
           activityEmojis.forEach((actEmoji, idx) => {
             if (actEmoji === emoji) {
@@ -107,8 +96,8 @@ const Activity: React.FC<ActivityProps> = ({ location, data }) => {
   }, [filteredActivities]);
 
   return (
-    <Layout location={location} hasBanner={false}>
-      <Seo title='경완 | Activity' />
+    <Layout location={location}>
+      <Seo pathname={location.pathname} title='ruddhks.my | Activity' />
       <Section
         header={{
           emoji: '📋',
@@ -128,20 +117,14 @@ const Activity: React.FC<ActivityProps> = ({ location, data }) => {
           ),
         }}
       >
-        <CategoryFilter
-          categories={months}
-          selectedCategory={selectedMonth}
-          onCategoryClick={handleMonthClick}
-        />
+        <CategoryFilter categories={months} selectedCategory={selectedMonth} onCategoryClick={handleMonthClick} />
         {activityTableData ? (
           <>
             <ActivityTable data={activityTableData} />
             {filteredActivities.length > 0 && (
               <ActivitySummary
                 month={activityTableData.month}
-                activities={
-                  filteredActivities[0].frontmatter.activities || []
-                }
+                activities={filteredActivities[0].frontmatter.activities || []}
               />
             )}
           </>
@@ -159,7 +142,7 @@ export const pageQuery = graphql`
   query {
     allMarkdownRemark(
       filter: { fileAbsolutePath: { regex: "/activities/" } }
-      sort: { fields: [frontmatter___year, frontmatter___month], order: DESC }
+      sort: [{ frontmatter: { year: DESC } }, { frontmatter: { month: DESC } }]
     ) {
       edges {
         node {

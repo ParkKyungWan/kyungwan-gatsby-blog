@@ -1,8 +1,6 @@
 import { css, Theme } from '@emotion/react';
 
 export const contentMaxWidth = '720px';
-export const bannerHeight = '172px';
-export const m_bannerHeight = '136px';
 export const headerHeight = '60px';
 export const footerHeight = 64;
 
@@ -21,6 +19,7 @@ export const lightTheme: Theme = {
     gray10: '#F7F8FA',
     white100: '#FFFFFF',
     white99: '#FFFFFF',
+    photoBorder: '#FFFFFF',
   },
 };
 export const darkTheme: Theme = {
@@ -35,6 +34,7 @@ export const darkTheme: Theme = {
     gray10: '#2C2D2E',
     white100: '#232326',
     white99: '#2C2D2E',
+    photoBorder: '#6B625A',
   },
 };
 

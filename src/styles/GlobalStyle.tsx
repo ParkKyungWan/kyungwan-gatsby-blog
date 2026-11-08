@@ -14,13 +14,18 @@ const style = (theme: Theme) => css`
   }
 
   html {
-    font-family: 'GmarketSansMedium';
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    font-family: 'GmarketSansMedium', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     width: 100%;
     height: 100%;
     overflow-y: scroll;
     font-size: 14px;
     color: ${theme.color.black100};
     background-color: ${theme.color.gray10};
+    @media ${MOBILE_MEDIA_QUERY} {
+      overflow-y: auto;
+    }
 
     a {
       color: ${theme.color.black100};

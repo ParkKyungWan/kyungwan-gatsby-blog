@@ -20,13 +20,12 @@ const Header: React.FC<HeaderProps> = ({ title, location }) => {
               <S.HomeLink to='/'>{title}</S.HomeLink>
             </div>
             <div className='mobile-only mobile-logo'>
-              <S.HomeLink to='/'>K</S.HomeLink>
+              <S.HomeLink to='/'>{title}</S.HomeLink>
             </div>
           </div>
         </S.TitleWrapper>
         <S.Menu>
           <S.MenuLink to='/posts'>Posts</S.MenuLink>
-          <S.MenuLink to='/activity'>Activity</S.MenuLink>
           <ThemeToggle />
           {/* <S.MenuLink to='/hobbies'>Hobbies</S.MenuLink> */}
         </S.Menu>

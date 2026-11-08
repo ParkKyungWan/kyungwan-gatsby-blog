@@ -1,13 +1,6 @@
 import styled from '@emotion/styled';
 
-import {
-  bannerHeight,
-  contentMaxWidth,
-  footerHeight,
-  headerHeight,
-  m_bannerHeight,
-  MOBILE_MEDIA_QUERY,
-} from '../styles/const';
+import { contentMaxWidth, footerHeight, headerHeight, MOBILE_MEDIA_QUERY } from '../styles/const';
 
 export const Wrapper = styled.div`
   overflow-y: scroll;
@@ -19,7 +12,29 @@ export const Wrapper = styled.div`
   padding-bottom: ${footerHeight}px;
 
   @media ${MOBILE_MEDIA_QUERY} {
-    padding-bottom: 0;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    overflow: visible;
+    isolation: isolate;
+    background-color: ${({ theme }) => theme.color.white100};
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: 48px;
+  }
+`;
+
+export const PageSurface = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: ${({ theme }) => theme.color.white100};
+  @media ${MOBILE_MEDIA_QUERY} {
+    position: relative;
+    z-index: 1;
   }
 `;
 
@@ -28,29 +43,24 @@ export const HeaderPadding = styled.div`
   content: '';
 `;
 
-export const BannerPadding = styled.div`
-  padding-top: ${bannerHeight};
-  content: '';
-  @media ${MOBILE_MEDIA_QUERY} {
-    padding-top: ${m_bannerHeight};
-  }
-`;
-
-export const ContentWrapper = styled.div`
+export const ContentWrapper = styled.div<{ compactTop: boolean; headerAligned: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  min-height: 100vh;
+  flex: 1;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding: 36px 12px;
+  padding-top: ${({ compactTop }) => (compactTop ? '8px' : '36px')};
   background-color: ${({ theme }) => theme.color.white100};
   box-shadow: 0 6px 12px rgb(0, 0, 0, 0.04), 0 -6px 12px rgb(0, 0, 0, 0.04);
 
   @media ${MOBILE_MEDIA_QUERY} {
-    margin-bottom: ${(footerHeight / 2) * 1.5}px;
+    box-shadow: none;
+    padding-left: ${({ headerAligned }) => (headerAligned ? '24px' : '12px')};
+    padding-right: ${({ headerAligned }) => (headerAligned ? '24px' : '12px')};
   }
 `;
 

@@ -28,17 +28,11 @@ export const Header = styled.div`
 
   .mobile-logo {
     @media ${MOBILE_MEDIA_QUERY} {
-      background-color: ${({ theme }) => theme.color.black100};
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
+      min-height: 28px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-family: Montserrat;
-      font-weight: 800;
       a {
-        color: ${({ theme }) => theme.color.white100};
+        font-size: 16px;
       }
     }
   }
@@ -66,10 +60,10 @@ export const HomeLink = styled(Link)`
 `;
 
 export const MenuLink = styled(Link)`
-  font-size: 16px;
+  font-size: 14px;
   ${({ theme }) => hoverEffect(theme)};
 
   @media ${MOBILE_MEDIA_QUERY} {
-    font-size: 13px;
+    font-size: 14px;
   }
 `;

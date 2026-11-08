@@ -11,15 +11,19 @@ export default class PostClass {
   date;
   categories;
   filteredCategories;
+  previewImages;
 
   constructor(node: MarkdownRemark) {
     const { id, html, excerpt, frontmatter, fields } = node;
     const { slug } = fields;
     const { emoji, categories, title, author, date } = frontmatter;
 
-    const categoryArr = categories ? categories.split(' ') : [];
+    const categoryArr = categories || [];
 
     this.id = id;
+    this.previewImages = (node.previewImages ?? []).flatMap((image) =>
+      image.childImageSharp?.resize?.src ? [image.childImageSharp.resize.src] : [],
+    );
     this.excerpt = excerpt;
     this.emoji = emoji;
     this.html = html;
@@ -29,7 +33,7 @@ export default class PostClass {
     this.date = date;
     this.categories = categoryArr;
     this.filteredCategories = categoryArr.map((category) => {
-      return category.replace('featured-', '').trim();
+      return category;
     });
   }
 }

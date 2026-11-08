@@ -9,7 +9,7 @@ const usePostsFilter = (posts: PostClass[]) => {
     const categorySet = new Set<string>();
     posts.forEach((post) => {
       post.categories.forEach((category) => {
-        const filteredCategory = category.replace('featured-', '').trim();
+        const filteredCategory = category;
         if (filteredCategory) {
           categorySet.add(filteredCategory);
         }
@@ -22,9 +22,7 @@ const usePostsFilter = (posts: PostClass[]) => {
     if (selectedCategory === '전체') {
       return posts;
     }
-    return posts.filter((post) =>
-      post.categories.some((category) => category.replace('featured-', '').trim() === selectedCategory),
-    );
+    return posts.filter((post) => post.categories.some((category) => category === selectedCategory));
   }, [posts, selectedCategory]);
 
   const handleCategoryClick = (category: string) => {

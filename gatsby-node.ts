@@ -54,11 +54,7 @@ export const createPages: GatsbyNode['createPages'] = async ({ graphql, actions,
     };
   } = await graphql(`
     {
-      allMarkdownRemark(
-        sort: { order: DESC, fields: [frontmatter___date] }
-        limit: 1000
-        filter: { fileAbsolutePath: { regex: "/\\\\/content\\\\//" } }
-      ) {
+      allMarkdownRemark(sort: { frontmatter: { date: DESC } }, filter: { fields: { isPost: { eq: true } } }) {
         edges {
           node {
             id
@@ -89,7 +85,58 @@ export const onCreateNode: GatsbyNode['onCreateNode'] = ({ node, actions, getNod
   const { createNodeField } = actions;
 
   if (node.internal.type === `MarkdownRemark`) {
+    const parent = getNode(node.parent as string);
+    createNodeField({ node, name: 'isPost', value: parent?.sourceInstanceName === 'blog' });
     const slug = createFilePath({ node, getNode, basePath: `content` });
     createNodeField({ node, name: `slug`, value: slug });
+  }
+};
+
+export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] = ({ actions }) => {
+  actions.createTypes(`
+    type MarkdownRemark implements Node { frontmatter: Frontmatter! fields: MarkdownFields! }
+    type MarkdownFields { slug: String! isPost: Boolean! }
+    type Frontmatter { title: String date: Date @dateformat categories: [String!] draft: Boolean featured: Boolean emoji: String }
+  `);
+};
+
+export const onPreInit: GatsbyNode['onPreInit'] = () => {
+  require('./scripts/content.cjs').validateAll();
+};
+
+export const createResolvers: GatsbyNode['createResolvers'] = ({ createResolvers, getNodesByType }) => {
+  createResolvers({
+    MarkdownRemark: {
+      previewImages: {
+        type: '[File!]',
+        resolve(
+          source: { parent: string; rawMarkdownBody?: string },
+          _args: unknown,
+          context: {
+            nodeModel: {
+              getNodeById: (args: { id: string }) => { absolutePath?: string } | undefined;
+            };
+          },
+        ) {
+          const parent = context.nodeModel.getNodeById({ id: source.parent });
+          if (!parent?.absolutePath) return [];
+          const directory = path.dirname(parent.absolutePath);
+          const paths = [
+            ...String(source.rawMarkdownBody ?? '').matchAll(/!\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+"[^"]*")?\s*\)/g),
+          ].map((match) => path.resolve(directory, decodeURI(match[1])));
+          const unique = [...new Set(paths)].slice(0, 4);
+          const files = getNodesByType('File');
+          const byPath = new Map([...files].map((file) => [file.absolutePath, file]));
+          return unique.map((imagePath) => byPath.get(imagePath)).filter(Boolean);
+        },
+      },
+    },
+  });
+};
+
+// Keep the Activity page implementation and data for later use, without publishing its route.
+export const onCreatePage: GatsbyNode['onCreatePage'] = ({ page, actions }) => {
+  if (page.path.replace(/\/$/, '') === '/activity') {
+    actions.deletePage(page);
   }
 };

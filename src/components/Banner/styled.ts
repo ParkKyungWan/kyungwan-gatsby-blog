@@ -1,80 +1,115 @@
-import { bannerHeight, contentMaxWidth, headerHeight, m_bannerHeight, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
-import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 
-export const Wrapper = styled.div`
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 100%;
-  height: ${bannerHeight};
-  margin-top: ${headerHeight};
-  background-color: ${({ theme }) => theme.color.white99};
-  box-shadow: inset 0 6px 12px rgb(0, 0, 0, 0.06);
-  z-index: -1;
+import { LENS } from './board';
 
-  @media ${MOBILE_MEDIA_QUERY} {
-    height: ${m_bannerHeight};
-  }
+import { contentMaxWidth, MOBILE_MEDIA_QUERY } from '@/src/styles/const';
+
+export const Wrapper = styled.section`
+  position: relative;
+  width: 100%;
+  background-color: ${({ theme }) => theme.color.white100};
+  padding: 26px 18px 16px;
 `;
 
 export const Inner = styled.div`
+  width: 100%;
+  max-width: ${contentMaxWidth};
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-end;
+
+  @media ${MOBILE_MEDIA_QUERY} {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+export const Viewport = styled.div`
+  width: 100%;
+  height: 160px;
   position: relative;
-  width: ${contentMaxWidth};
-  height: 100%;
-  z-index: -1;
-
-  /* 100vw 대신 100% 사용: 모바일에서 뒤로가기(bfcache) 시 100vw가
-   * 뷰포트와 어긋나 스티커 위치가 잘못 계산되는 현상 방지 */
-  @media ${MOBILE_MEDIA_QUERY} {
-    width: 100%;
-  }
+  overflow: visible;
+  border: 1px solid ${({ theme }) => theme.color.gray20};
+  border-radius: 2px;
+  background-color: ${({ theme }) => theme.color.white99};
+  background-image: linear-gradient(${({ theme }) => theme.color.gray20} 1px, transparent 1px),
+    linear-gradient(90deg, ${({ theme }) => theme.color.gray20} 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: -1px -1px;
 `;
 
-const createFloatAnimation = (
-  baseTransform: string,
-  x1: number,
-  y1: number,
-  rotate1: number,
-  x2: number,
-  y2: number,
-  rotate2: number,
-) => keyframes`
-  0%, 100% {
-    transform: ${baseTransform} translate(0, 0) rotate(0deg);
-  }
-  50% {
-    transform: ${baseTransform} translate(${x1}px, ${y1}px) rotate(${rotate1}deg);
-  }
-`;
-
-type FloatingImageProps = {
-  position: {
-    left?: string;
-    right?: string;
-    top?: string;
-    bottom?: string;
-  };
-  animation: ReturnType<typeof keyframes>;
-};
-
-export const FloatingImage = styled.img<FloatingImageProps>`
+export const Canvas = styled.canvas`
   position: absolute;
-  left: ${({ position }) => position.left};
-  right: ${({ position }) => position.right};
-  top: ${({ position }) => position.top};
-  bottom: ${({ position }) => position.bottom};
-  will-change: transform;
-  animation-name: ${({ animation }) => animation};
-  animation-duration: 20s;
-  animation-delay: -1.5s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  width: 104px;
+  left: -12px;
+  top: -12px;
+  display: block;
+  width: calc(100% + 24px);
+  height: calc(100% + 24px);
+  pointer-events: none;
+`;
+
+export const Lens = styled.div`
+  position: absolute;
+  left: ${LENS.position * 100}%;
+  top: 50%;
+  width: ${LENS.diameter}px;
+  height: ${LENS.diameter}px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
 
   @media ${MOBILE_MEDIA_QUERY} {
-    scale: 0.77;
+    width: 120px;
+    height: 120px;
+    visibility: hidden;
+    [data-mobile-selected='true'] & {
+      visibility: visible;
+    }
   }
+
+  [data-lens-active='true'] & {
+    z-index: 101;
+  }
+  border: 1px solid ${({ theme }) => theme.color.gray40};
+  box-shadow: 0 8px 18px rgb(0 0 0 / 0.08), 0 2px 4px rgb(0 0 0 / 0.05), inset 0 0 0 2px rgb(255 255 255 / 0.65);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(ellipse at 30% 19%, rgb(255 255 255 / 0.48), transparent 48%),
+      radial-gradient(circle at 50% 50%, transparent 68%, rgb(125 140 155 / 0.12) 95%);
+    box-shadow: inset 2px 3px 5px rgb(255 255 255 / 0.85), inset -2px -3px 6px rgb(100 115 130 / 0.13);
+  }
+`;
+
+export const StickerTarget = styled.button`
+  display: none;
+  @media ${MOBILE_MEDIA_QUERY} {
+    display: block;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    touch-action: manipulation;
+    &:focus-visible {
+      outline: 2px solid ${({ theme }) => theme.color.gray60};
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+  }
+`;
+
+export const LensCanvas = styled.canvas`
+  display: block;
+  width: 100%;
+  height: 100%;
 `;
