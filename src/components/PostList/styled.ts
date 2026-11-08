@@ -49,14 +49,6 @@ export const Item = styled(Link)`
   }
 `;
 
-export const PreviewItem = styled.div`
-  ${({ theme }) => itemStyles(theme)};
-  cursor: default;
-  &:hover {
-    background-color: transparent;
-  }
-`;
-
 export const TopContent = styled.div`
   width: 100%;
   display: flex;
