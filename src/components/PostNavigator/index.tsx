@@ -1,6 +1,7 @@
 import React from 'react';
 
 import PostClass from '@/src/models/post';
+import PhotoFan from '../PhotoFan';
 
 import * as S from './styled';
 
@@ -13,10 +14,11 @@ const PostNavigator: React.FC<PostNavigatorProps> = ({ prevPost, nextPost }) => 
   return (
     <S.Wrapper>
       <div>
-        {nextPost ? (
-          <S.PostCard className='prev' key={nextPost.id} to={nextPost.slug}>
+        {prevPost ? (
+          <S.PostCard data-photo-preview className='prev' key={prevPost.id} to={prevPost.slug}>
+            <PhotoFan images={prevPost.previewImages} />
             <S.Direction>이전 글</S.Direction>
-            <S.Title>{nextPost.title}</S.Title>
+            <S.Title>{prevPost.title}</S.Title>
           </S.PostCard>
         ) : (
           <S.EmptyCard className='prev'>
@@ -26,13 +28,14 @@ const PostNavigator: React.FC<PostNavigatorProps> = ({ prevPost, nextPost }) => 
         )}
       </div>
       <div>
-        {prevPost ? (
-          <S.PostCard className='next' key={prevPost.id} to={prevPost.slug}>
+        {nextPost ? (
+          <S.PostCard data-photo-preview className='next' key={nextPost.id} to={nextPost.slug}>
+            <PhotoFan images={nextPost.previewImages} />
             <S.Direction>다음 글</S.Direction>
-            <S.Title>{prevPost.title}</S.Title>
+            <S.Title>{nextPost.title}</S.Title>
           </S.PostCard>
         ) : (
-          <S.EmptyCard className='prev'>
+          <S.EmptyCard className='next'>
             <S.Direction>다음 글</S.Direction>
             <S.Title>다음 글이 없습니다.</S.Title>
           </S.EmptyCard>

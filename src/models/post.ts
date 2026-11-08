@@ -11,6 +11,7 @@ export default class PostClass {
   date;
   categories;
   filteredCategories;
+  previewImages;
 
   constructor(node: MarkdownRemark) {
     const { id, html, excerpt, frontmatter, fields } = node;
@@ -20,6 +21,9 @@ export default class PostClass {
     const categoryArr = categories || [];
 
     this.id = id;
+    this.previewImages = (node.previewImages ?? []).flatMap((image) =>
+      image.childImageSharp?.resize?.src ? [image.childImageSharp.resize.src] : [],
+    );
     this.excerpt = excerpt;
     this.emoji = emoji;
     this.html = html;

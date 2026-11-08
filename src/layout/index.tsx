@@ -14,10 +14,12 @@ import * as S from './styled';
 type LayoutProps = {
   location: Location;
   banner?: React.ReactNode;
+  compactTop?: boolean;
+  headerAligned?: boolean;
   children: React.ReactNode;
 };
 
-const Layout: React.FC<LayoutProps> = ({ location, banner, children }) => {
+const Layout: React.FC<LayoutProps> = ({ location, banner, compactTop = false, headerAligned = false, children }) => {
   const theme = useContext(ThemeManagerContext);
 
   const data = useStaticQuery(graphql`
@@ -35,12 +37,14 @@ const Layout: React.FC<LayoutProps> = ({ location, banner, children }) => {
     <ThemeProvider theme={theme.isDark ? darkTheme : lightTheme}>
       <GlobalStyle />
       <S.Wrapper>
-        <S.HeaderPadding />
-        {banner}
-        <S.ContentWrapper afterBanner={Boolean(banner)}>
-          {location && <Header location={location} title={title} />}
-          <S.Content>{children}</S.Content>
-        </S.ContentWrapper>
+        <S.PageSurface>
+          <S.HeaderPadding />
+          {banner}
+          <S.ContentWrapper compactTop={Boolean(banner) || compactTop} headerAligned={headerAligned}>
+            {location && <Header location={location} title={title} />}
+            <S.Content>{children}</S.Content>
+          </S.ContentWrapper>
+        </S.PageSurface>
         <Footer />
       </S.Wrapper>
     </ThemeProvider>

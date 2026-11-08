@@ -1,12 +1,12 @@
 import React from 'react';
 import type { GatsbySSR } from 'gatsby';
 import { ThemeManagerProvider } from './src/context/theme';
+import SiteFonts from './src/components/SiteFonts';
 import { RenderBodyArgs } from 'gatsby';
 
 export const onRenderBody = ({ setHtmlAttributes, setHeadComponents }: RenderBodyArgs) => {
   setHtmlAttributes({ lang: `ko` });
   setHeadComponents([
-    <link key='site-fonts' rel='stylesheet' href='/fonts/fonts.css' />,
     ...['Medium', 'Bold', 'Light'].map((weight) => (
       <link
         key={`gmarket-${weight}`}
@@ -21,5 +21,8 @@ export const onRenderBody = ({ setHtmlAttributes, setHeadComponents }: RenderBod
 };
 
 export const wrapRootElement: GatsbySSR['wrapRootElement'] = ({ element }) => (
-  <ThemeManagerProvider>{element}</ThemeManagerProvider>
+  <>
+    <SiteFonts />
+    <ThemeManagerProvider>{element}</ThemeManagerProvider>
+  </>
 );

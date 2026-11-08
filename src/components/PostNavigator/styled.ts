@@ -37,8 +37,30 @@ const cardStyle = (theme: Theme) => css`
   }
 `;
 
-export const PostCard = styled(Link)(({ theme }) => cardStyle(theme));
-export const EmptyCard = styled.div(({ theme }) => [cardStyle(theme), { cursor: 'default' }]);
+export const PostCard = styled(Link)`
+  ${({ theme }) => cardStyle(theme)};
+  position: relative;
+  isolation: isolate;
+  @media (hover: none) and (pointer: coarse) {
+    --fan-mobile-scale: 0.52;
+    -webkit-touch-callout: none;
+    user-select: none;
+    &:active {
+      z-index: 5;
+      background-color: ${({ theme }) => theme.color.gray20};
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover,
+    &:focus-visible {
+      z-index: 5;
+    }
+  }
+`;
+export const EmptyCard = styled.div(({ theme }) => [
+  cardStyle(theme),
+  { 'cursor': 'default', 'opacity': 0.4, '&:hover': { backgroundColor: theme.color.gray10 } },
+]);
 
 export const Direction = styled.div`
   color: ${({ theme }) => theme.color.gray60};

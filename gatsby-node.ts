@@ -104,6 +104,36 @@ export const onPreInit: GatsbyNode['onPreInit'] = () => {
   require('./scripts/content.cjs').validateAll();
 };
 
+export const createResolvers: GatsbyNode['createResolvers'] = ({ createResolvers, getNodesByType }) => {
+  createResolvers({
+    MarkdownRemark: {
+      previewImages: {
+        type: '[File!]',
+        resolve(
+          source: { parent: string; rawMarkdownBody?: string },
+          _args: unknown,
+          context: {
+            nodeModel: {
+              getNodeById: (args: { id: string }) => { absolutePath?: string } | undefined;
+            };
+          },
+        ) {
+          const parent = context.nodeModel.getNodeById({ id: source.parent });
+          if (!parent?.absolutePath) return [];
+          const directory = path.dirname(parent.absolutePath);
+          const paths = [
+            ...String(source.rawMarkdownBody ?? '').matchAll(/!\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+"[^"]*")?\s*\)/g),
+          ].map((match) => path.resolve(directory, decodeURI(match[1])));
+          const unique = [...new Set(paths)].slice(0, 4);
+          const files = getNodesByType('File');
+          const byPath = new Map([...files].map((file) => [file.absolutePath, file]));
+          return unique.map((imagePath) => byPath.get(imagePath)).filter(Boolean);
+        },
+      },
+    },
+  });
+};
+
 // Keep the Activity page implementation and data for later use, without publishing its route.
 export const onCreatePage: GatsbyNode['onCreatePage'] = ({ page, actions }) => {
   if (page.path.replace(/\/$/, '') === '/activity') {

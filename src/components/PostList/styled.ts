@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { css, Theme } from '@emotion/react';
 import { Link } from 'gatsby';
 
 export const Wrapper = styled.div`
@@ -8,7 +9,7 @@ export const Wrapper = styled.div`
   gap: 8px;
 `;
 
-export const Item = styled(Link)`
+const itemStyles = (theme: Theme) => css`
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -17,14 +18,42 @@ export const Item = styled(Link)`
   gap: 12px;
   width: 100%;
   padding: 18px;
-  border: 1px solid ${({ theme }) => theme.color.gray20};
+  border: 1px solid ${theme.color.gray20};
   border-radius: 8px;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
   font-size: 14px;
   &:hover {
-    background-color: ${({ theme }) => theme.color.gray10};
+    background-color: ${theme.color.gray10};
+  }
+`;
+
+export const Item = styled(Link)`
+  ${({ theme }) => itemStyles(theme)};
+  position: relative;
+  isolation: isolate;
+  @media (hover: none) and (pointer: coarse) {
+    -webkit-touch-callout: none;
+    user-select: none;
+    &:active {
+      z-index: 5;
+      background-color: ${({ theme }) => theme.color.gray10};
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover,
+    &:focus-visible {
+      z-index: 5;
+    }
+  }
+`;
+
+export const PreviewItem = styled.div`
+  ${({ theme }) => itemStyles(theme)};
+  cursor: default;
+  &:hover {
+    background-color: transparent;
   }
 `;
 
@@ -70,7 +99,7 @@ export const Title = styled.span`
 `;
 
 export const Date = styled.span`
-  font-size: 14px;
+  font-size: 12px;
   color: ${({ theme }) => theme.color.gray60};
 `;
 
@@ -109,13 +138,16 @@ export const MoreLink = styled(Link)`
   padding: 14px 18px;
   border: 1px solid ${({ theme }) => theme.color.gray20};
   border-radius: 8px;
-  background-color: ${({ theme }) => theme.color.gray10};
+  background-color: ${({ theme }) => theme.color.white99};
+  font-family: 'Noto Sans KR', sans-serif;
   font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
   color: ${({ theme }) => theme.color.gray80};
   transition: background-color 150ms ease, color 150ms ease;
 
   &:hover {
-    background-color: ${({ theme }) => theme.color.gray20};
+    background-color: ${({ theme }) => theme.color.gray10};
     color: ${({ theme }) => theme.color.black100};
   }
 

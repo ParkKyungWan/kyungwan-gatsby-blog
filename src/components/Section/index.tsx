@@ -10,9 +10,10 @@ type SectionProps = {
     more?: React.ReactNode;
   };
   children: React.ReactNode;
+  flush?: boolean;
 };
 
-const Section: React.FC<SectionProps> = ({ header, children }) => {
+const Section: React.FC<SectionProps> = ({ header, children, flush = false }) => {
   return (
     <S.Wrapper>
       {header && (
@@ -27,7 +28,7 @@ const Section: React.FC<SectionProps> = ({ header, children }) => {
           {header.more && <S.MoreWrapper>{header.more}</S.MoreWrapper>}
         </S.Header>
       )}
-      <S.Content>{children}</S.Content>
+      <S.Content style={flush ? { padding: '12px 0' } : undefined}>{children}</S.Content>
     </S.Wrapper>
   );
 };

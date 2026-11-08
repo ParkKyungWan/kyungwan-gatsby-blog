@@ -5,6 +5,7 @@ export type SiteMetadata = {
 };
 
 export type Post = {
+  previewImages?: MarkdownRemark['previewImages'];
   id: string;
   excerpt: string;
   html: string;
@@ -17,6 +18,7 @@ export type AllMarkdownRemark = {
 };
 
 export type MarkdownRemark = {
+  previewImages?: { childImageSharp?: { resize?: { src: string } } }[];
   id: string;
   frontmatter: Frontmatter;
   fields: Fields;

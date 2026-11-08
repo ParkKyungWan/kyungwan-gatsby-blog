@@ -2,7 +2,7 @@
 emoji: 💻
 title: '블로그를 시작하며'
 date: '2026-02-14'
-categories: ["작업"]
+categories: ["블로그"]
 featured: true
 draft: false
 ---

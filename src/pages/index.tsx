@@ -24,7 +24,8 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
   const allPosts = data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node));
   const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(allPosts);
   const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
-  const posts = filteredPosts.slice(0, 2);
+  const posts = filteredPosts.slice(0, 3);
+  const showSamplePreview = process.env.NODE_ENV === 'development' && posts.length < 3;
 
   const renderContentH = () => {
     switch (selectedCategoryH) {
@@ -46,7 +47,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
           header={{
             more: (
               <PostStyles.PostCount>
-                <strong>{allPosts.length}</strong>개의 글
+                <strong>{allPosts.length + Number(showSamplePreview)}</strong>개의 글
               </PostStyles.PostCount>
             ),
           }}
@@ -57,7 +58,7 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
             selectedCategory={selectedCategory}
             onCategoryClick={handleCategoryClick}
           /> */}
-          <PostList posts={posts} />
+          <PostList posts={posts} samplePreview={showSamplePreview} />
           <PostStyles.MoreLink to='/posts/' aria-label='모든 게시글 보기'>
             더보기
           </PostStyles.MoreLink>
@@ -93,6 +94,13 @@ export const pageQuery = graphql`
       edges {
         node {
           id
+          previewImages {
+            childImageSharp {
+              resize(width: 360, height: 440, fit: COVER, quality: 80) {
+                src
+              }
+            }
+          }
           excerpt(pruneLength: 500, truncate: true)
           frontmatter {
             categories

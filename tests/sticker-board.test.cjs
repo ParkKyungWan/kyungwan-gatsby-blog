@@ -12,95 +12,78 @@ compiled._compile(
     .outputText,
   filename,
 );
-const { createBoard, seededRandom, STICKER_OVERHANG } = compiled.exports;
+const { createBoard, seededRandom, STICKER_OVERHANG, STICKER_AREA_SCALE, LENS } = compiled.exports;
 const sources = Array.from({ length: 5 }, (_, i) => ({ id: String(i), width: 200 + i * 35, height: 300 - i * 20 }));
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`);
 
-test('fixed board keeps viewport dimensions and uses the midpoint of the two previous sticker sizes', () => {
-  const board = createBoard([{ id: 'sample', width: 200, height: 100 }], { width: 718, height: 158 }, () => 0.5);
-  assert.equal(board.width, 718);
-  assert.equal(board.height, 158);
+test('size reduction preserves aspect ratio and transparent crop scale', () => {
+  const board = createBoard(
+    [{ id: 'sample', width: 200, height: 100, crop: { x: 20, y: 10, width: 160, height: 80 } }],
+    { width: 718, height: 158 },
+    () => 0.5,
+  );
   const sticker = board.stickers[0];
-  // The old midpoint longest edge was 118px, with a 2:1 aspect ratio.
-  close(sticker.width * sticker.height, 118 * 59 * 0.5 * (5 / 6) ** 2);
+  close(sticker.width * sticker.height, 118 * 59 * STICKER_AREA_SCALE * 0.8 ** 2);
   close(sticker.width / sticker.height, 2);
 });
 
-test('stickers stay clustered on the right, with slight overhang and bounded visibility', () => {
-  for (const width of [284, 354, 718])
-    for (let seed = 1; seed <= 100; seed++) {
-      const board = createBoard(sources, { width, height: 158 }, seededRandom(seed));
-      assert.equal(board.stickers.length, sources.length);
-      assert.equal(new Set(board.stickers.map((s) => s.id)).size, sources.length);
-      let overhang = false;
-      for (const s of board.stickers) {
-        const left = s.x - s.bounds.width / 2,
-          right = s.x + s.bounds.width / 2;
-        const top = s.y - s.bounds.height / 2,
-          bottom = s.y + s.bounds.height / 2;
-        assert.ok(left >= -STICKER_OVERHANG - 1e-8 && right <= width + STICKER_OVERHANG + 1e-8);
-        assert.ok(top >= -STICKER_OVERHANG - 1e-8 && bottom <= 158 + STICKER_OVERHANG + 1e-8);
-        if (left < -1 || right > width + 1 || top < -1 || bottom > 159) overhang = true;
-        const original = sources.find((source) => source.id === s.id);
-        close(s.width / s.height, original.width / original.height);
-      }
-      assert.ok(overhang);
-      const clusterWidth = Math.min(width, Math.max(170, width * 0.34));
-      for (const s of board.stickers) {
-        assert.ok(s.x - s.bounds.width / 2 >= width - clusterWidth - STICKER_OVERHANG - 1e-8);
+test('complete layouts clear the lens at all widths and avoid crowding on desktop', () => {
+  for (const width of [280, 320, 375, 610, 800, 1200])
+    for (let seed = 0; seed < 100; seed++) {
+      const board = createBoard(sources, { width, height: 160 }, seededRandom(seed));
+      assert.equal(board.stickers.length, sources.length, `width=${width}, seed=${seed}`);
+      for (const [i, s] of board.stickers.entries()) {
+        const dx = width * LENS.position - s.x,
+          dy = 80 - s.y;
+        const x = dx * Math.cos(s.rotation) + dy * Math.sin(s.rotation);
+        const y = -dx * Math.sin(s.rotation) + dy * Math.cos(s.rotation);
+        assert.ok(
+          Math.hypot(Math.max(0, Math.abs(x) - s.width / 2), Math.max(0, Math.abs(y) - s.height / 2)) >=
+            LENS.diameter * 0.4,
+        );
+        assert.ok(s.x - s.bounds.width / 2 >= width * LENS.position + LENS.diameter / 2 - 8 - 1e-8);
+        assert.ok(s.x + s.bounds.width / 2 <= width + STICKER_OVERHANG + 1e-8);
+        assert.ok(s.y - s.bounds.height / 2 >= -STICKER_OVERHANG - 1e-8);
+        assert.ok(s.y + s.bounds.height / 2 <= 160 + STICKER_OVERHANG + 1e-8);
+        for (const other of board.stickers.slice(i + 1)) {
+          const gap = Math.hypot(
+            Math.max(0, Math.abs(s.x - other.x) - (s.bounds.width + other.bounds.width) / 2),
+            Math.max(0, Math.abs(s.y - other.y) - (s.bounds.height + other.bounds.height) / 2),
+          );
+          if (width >= 610) assert.ok(gap >= 6 - 1e-8);
+        }
       }
     }
 });
 
-test('new seeds change placement and resizing preserves identities, sizes and angles', () => {
-  const viewport = { width: 718, height: 158 };
-  const first = createBoard(sources, viewport, seededRandom(1));
-  assert.notDeepEqual(first.stickers, createBoard(sources, viewport, seededRandom(2)).stickers);
-  assert.deepEqual(first, createBoard(sources, viewport, seededRandom(1)));
-  const resized = createBoard(sources, { width: 354, height: 158 }, seededRandom(1));
-  assert.deepEqual(
-    first.stickers.map(({ id, width, height, rotation }) => ({ id, width, height, rotation })),
-    resized.stickers.map(({ id, width, height, rotation }) => ({ id, width, height, rotation })),
-  );
+test('seeded layouts are repeatable and preserve sticker character across resizing', () => {
+  const first = createBoard(sources, { width: 718, height: 160 }, seededRandom(1));
+  assert.deepEqual(first, createBoard(sources, { width: 718, height: 160 }, seededRandom(1)));
+  assert.notDeepEqual(first, createBoard(sources, { width: 718, height: 160 }, seededRandom(2)));
+  const resized = createBoard(sources, { width: 320, height: 160 }, seededRandom(1));
+  const character = (board) =>
+    board.stickers.map(({ id, width, height, rotation }) => ({ id, width, height, rotation }));
+  assert.deepEqual(character(first), character(resized));
   assert.deepEqual(
     sources.map((s) => s.id),
     ['0', '1', '2', '3', '4'],
   );
 });
 
-test('empty asset list leaves an empty fixed board', () => {
-  assert.deepEqual(createBoard([], { width: 718, height: 158 }), { width: 718, height: 158, stickers: [] });
+test('empty sources and constant random sources terminate safely', () => {
+  assert.deepEqual(createBoard([], { width: 718, height: 160 }), { width: 718, height: 160, stickers: [] });
+  assert.equal(createBoard(sources, { width: 320, height: 160 }, () => 0.5).stickers.length, 5);
 });
 
-test('transparent margins do not prevent edge overhang or change the intended image scale', () => {
-  const board = createBoard(
-    [{ id: 'padded', width: 200, height: 100, crop: { x: 20, y: 10, width: 160, height: 80 } }],
-    { width: 718, height: 158 },
-    () => 0.5,
-  );
-  const sticker = board.stickers[0];
-  close(sticker.width * sticker.height, ((160 * 118) / 200) * ((80 * 118) / 200) * 0.5 * (5 / 6) ** 2);
-  assert.equal(sticker.rotation, 0);
-  const left = sticker.x - sticker.width / 2,
-    right = sticker.x + sticker.width / 2;
-  const top = sticker.y - sticker.height / 2,
-    bottom = sticker.y + sticker.height / 2;
-  assert.ok(left <= -8 || right >= 726 || top <= -8 || bottom >= 166);
-});
-
-test('coffee straddles the lens rim and remains visible in the magnified portion', () => {
-  const { LENS } = compiled.exports;
-  const input = [{ id: 'drip', width: 200, height: 240 }, ...sources];
-  for (const width of [284, 354, 718])
-    for (let seed = 1; seed <= 30; seed++) {
-      const board = createBoard(input, { width, height: 158 }, seededRandom(seed));
-      const coffee = board.stickers.find((s) => s.id === 'drip');
-      const center = width * LENS.position;
-      const rim = center + LENS.diameter / 2;
-      assert.ok(coffee.x - coffee.width / 2 < center + LENS.diameter / 2 / LENS.zoom);
-      assert.ok(coffee.x + coffee.width / 2 > rim);
-      close(coffee.y, 79);
-      assert.equal(coffee.rotation, 0);
-      for (const other of board.stickers.filter((s) => s.id !== 'drip')) assert.ok(other.x > coffee.x);
+test('mixed photo and sticker layouts retain every asset and include print margins', () => {
+  const photo = { id: 'climbing-photo', kind: 'photo', width: 491, height: 640 };
+  for (const width of [280, 375, 720])
+    for (let seed = 0; seed < 30; seed++) {
+      const board = createBoard([...sources, photo], { width, height: 160 }, seededRandom(seed));
+      assert.equal(board.stickers.length, 6);
+      const print = board.stickers.find((s) => s.id === photo.id);
+      close((print.width - 8) / (print.height - 13), photo.width / photo.height);
+      assert.ok(Math.abs(print.rotation) <= 0.13);
+      assert.ok(print.x - print.bounds.width / 2 >= width * LENS.position + LENS.diameter / 2 - 8 - 1e-8);
     }
 });

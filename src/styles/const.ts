@@ -19,6 +19,7 @@ export const lightTheme: Theme = {
     gray10: '#F7F8FA',
     white100: '#FFFFFF',
     white99: '#FFFFFF',
+    photoBorder: '#FFFFFF',
   },
 };
 export const darkTheme: Theme = {
@@ -33,6 +34,7 @@ export const darkTheme: Theme = {
     gray10: '#2C2D2E',
     white100: '#232326',
     white99: '#2C2D2E',
+    photoBorder: '#6B625A',
   },
 };
 
