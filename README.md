@@ -33,6 +33,7 @@ npm run dev
 
 `http://localhost:8000`에서 확인합니다. 패키지는 `package-lock.json`으로 관리하며 Yarn은 사용하지 않습니다.
 Netlify는 `netlify.toml`의 Node/npm 버전과 `npm run build`, `public` 출력을 사용합니다.
+Gatsby의 Sharp 하위 의존성도 `overrides`로 0.34.5에 통일합니다. 구형 Sharp의 GitHub libvips 다운로드 실패를 피하고, `.npmrc`의 `include=optional`로 플랫폼별 npm 바이너리를 설치합니다.
 Git 연동 배포라면 설정된 운영 브랜치에 반영할 때 배포됩니다. 수동 업로드 방식이면
 `npm run build` 후 `public` 폴더를 업로드하세요. 실제 계정의 Git 연동 여부는 대시보드에서 확인합니다.
 GitHub Actions는 설치·테스트·타입 검사·운영 빌드를 검사합니다.

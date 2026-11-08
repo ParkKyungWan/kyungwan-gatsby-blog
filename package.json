@@ -59,7 +59,7 @@
     "typescript": "^4.8.4",
     "@babel/eslint-parser": "^7.22.0",
     "gray-matter": "^4.0.3",
-    "sharp": "^0.34.0",
+    "sharp": "0.34.5",
     "js-yaml": "^4.1.0"
   },
   "homepage": "https://github.com/gatsbyjs/gatsby-starter-blog#readme",
@@ -91,5 +91,8 @@
     "node": ">=22 <23",
     "npm": ">=10 <11"
   },
-  "packageManager": "npm@10.9.4"
+  "packageManager": "npm@10.9.4",
+  "overrides": {
+    "sharp": "$sharp"
+  }
 }
