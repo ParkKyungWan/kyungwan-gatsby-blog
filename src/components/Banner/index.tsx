@@ -6,6 +6,7 @@ import { MOBILE_MAX_WIDTH } from '@/src/styles/const';
 import { drawCoffeeBrew } from './coffee';
 import { createMagnet, moveMagnet, returnMagnet, selectMagnet, stepMagnet } from './magnet';
 import * as S from './styled';
+import { wineFeed } from './wine-feed';
 
 const CANVAS_BLEED = 12;
 const stickers = [
@@ -94,6 +95,10 @@ const HomeBanner: React.FC = () => {
     let videoOpacity = 0;
     let coffeeOpacity = 0;
     let coffeeStarted = 0;
+    let wineOpacity = 0;
+    let wineStarted: number | null = null;
+    let wineRequested = false;
+    let winePhotos: HTMLImageElement[] = [];
     let previousDrawTime = 0;
     let videoRequested = false;
     let videoFailed = false;
@@ -194,7 +199,34 @@ const HomeBanner: React.FC = () => {
           Math.hypot(magnet.locked.x - dripper.x, magnet.locked.y - dripper.y) < 1,
       );
       if (coffeeFocused && !coffeeStarted) coffeeStarted = time;
-      lensSurface.dataset.scene = coffeeFocused ? 'coffee' : focused ? 'guinea' : 'magnify';
+      const wine = board.stickers.find((sticker) => sticker.id === 'wine');
+      const wineFocused = Boolean(
+        lensVisible && wine && magnet.locked && Math.hypot(magnet.locked.x - wine.x, magnet.locked.y - wine.y) < 1,
+      );
+      if (wineFocused && !wineRequested) {
+        wineRequested = true;
+        const selection = [...wineFeed];
+        for (let i = selection.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [selection[i], selection[j]] = [selection[j], selection[i]];
+        }
+        Promise.all(
+          selection.slice(0, 3).map(
+            ({ src }) =>
+              new Promise<HTMLImageElement | null>((resolve) => {
+                const photo = new Image();
+                photo.onload = () => resolve(photo);
+                photo.onerror = () => resolve(null);
+                photo.src = src;
+              }),
+          ),
+        ).then((photos) => {
+          if (disposed) return;
+          winePhotos = photos.filter((photo): photo is HTMLImageElement => photo !== null);
+          requestDraw();
+        });
+      }
+      lensSurface.dataset.scene = wineFocused ? 'wine' : coffeeFocused ? 'coffee' : focused ? 'guinea' : 'magnify';
       if (focused && !videoRequested && !videoFailed) {
         videoRequested = true;
         video
@@ -247,13 +279,80 @@ const HomeBanner: React.FC = () => {
         lensContext.restore();
       }
       if (!coffeeFocused && coffeeOpacity === 0) coffeeStarted = 0;
+      const wineTarget = wineFocused && winePhotos.length > 0 ? 1 : 0;
+      wineOpacity = reducedMotion
+        ? wineTarget
+        : Math.max(0, Math.min(1, wineOpacity + ((wineTarget ? 1 : -1) * delta) / 240));
+      if (wineOpacity > 0 && winePhotos.length > 0) {
+        if (wineStarted === null) {
+          wineStarted = time;
+          // Shuffle on each new focus, so the feed never plays in posting order.
+          for (let i = winePhotos.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [winePhotos[i], winePhotos[j]] = [winePhotos[j], winePhotos[i]];
+          }
+        }
+        const elapsed = reducedMotion ? 0 : time - wineStarted;
+        const index = Math.floor(elapsed / 3000) % winePhotos.length;
+        const blend = Math.max(0, Math.min(1, ((elapsed % 3000) - 2600) / 400));
+        const drawPhoto = (photo: HTMLImageElement, alpha: number) => {
+          const side = Math.min(photo.naturalWidth, photo.naturalHeight);
+          lensContext.save();
+          lensContext.globalAlpha = alpha;
+          lensContext.beginPath();
+          lensContext.arc(diameter / 2, diameter / 2, diameter / 2, 0, Math.PI * 2);
+          lensContext.clip();
+          lensContext.drawImage(
+            photo,
+            (photo.naturalWidth - side) / 2,
+            (photo.naturalHeight - side) / 2,
+            side,
+            side,
+            0,
+            0,
+            diameter,
+            diameter,
+          );
+          lensContext.restore();
+        };
+        drawPhoto(winePhotos[index], wineOpacity);
+        if (blend > 0 && winePhotos.length > 1) {
+          drawPhoto(winePhotos[(index + 1) % winePhotos.length], wineOpacity * blend);
+        }
+        // Feed-style page dots stay anchored to the inside bottom of the convex lens.
+        const activeIndex = blend >= 0.5 ? (index + 1) % winePhotos.length : index;
+        const spacing = diameter <= 120 ? 9 : 11;
+        const radius = diameter <= 120 ? 2.4 : 2.8;
+        const dotsY = diameter - (diameter <= 120 ? 13 : 17);
+        lensContext.save();
+        lensContext.globalAlpha = wineOpacity;
+        lensContext.shadowColor = 'rgba(0, 0, 0, 0.55)';
+        lensContext.shadowBlur = 3;
+        lensContext.shadowOffsetY = 1;
+        for (let i = 0; i < winePhotos.length; i++) {
+          lensContext.beginPath();
+          lensContext.arc(
+            diameter / 2 + (i - (winePhotos.length - 1) / 2) * spacing,
+            dotsY,
+            i === activeIndex ? radius * 1.3 : radius,
+            0,
+            Math.PI * 2,
+          );
+          lensContext.fillStyle = i === activeIndex ? '#ffffff' : '#8e8e93';
+          lensContext.fill();
+        }
+        lensContext.restore();
+      }
+      if (!wineFocused && wineOpacity === 0) wineStarted = null;
       if (
         animating ||
         moving ||
         videoOpacity !== targetOpacity ||
         (showVideo && !video.ended) ||
         coffeeOpacity !== coffeeTarget ||
-        (coffeeFocused && !reducedMotion)
+        (coffeeFocused && !reducedMotion) ||
+        wineOpacity !== wineTarget ||
+        (wineFocused && winePhotos.length > 1 && !reducedMotion)
       )
         requestDraw();
     };
@@ -333,6 +432,34 @@ const HomeBanner: React.FC = () => {
       returnMagnet(magnet, { x: board.width * LENS.position, y: board.height / 2 }, performance.now());
       requestDraw();
     };
+    const releaseLens = () => {
+      if (
+        !board ||
+        (!surface.hasAttribute('data-lens-active') && !surface.hasAttribute('data-mobile-selected') && !magnet.locked)
+      )
+        return;
+      surface.removeAttribute('data-lens-active');
+      surface.removeAttribute('data-mobile-selected');
+      returnMagnet(magnet, { x: board.width * LENS.position, y: board.height / 2 }, performance.now());
+      requestDraw();
+    };
+    const onOutsidePointer = (event: MouseEvent | PointerEvent) => {
+      const rect = surface.getBoundingClientRect();
+      if (
+        event.clientX < rect.left ||
+        event.clientX > rect.right ||
+        event.clientY < rect.top ||
+        event.clientY > rect.bottom
+      )
+        releaseLens();
+    };
+    const onOutsideFocus = (event: FocusEvent) => {
+      if (event.target instanceof Node && !surface.contains(event.target)) releaseLens();
+    };
+    document.addEventListener('pointerdown', onOutsidePointer, true);
+    document.addEventListener('click', onOutsidePointer, true);
+    document.addEventListener('focusin', onOutsideFocus, true);
+    window.addEventListener('blur', releaseLens);
     video.addEventListener('loadeddata', requestDraw);
     video.addEventListener('playing', requestDraw);
     const onVideoError = () => {
@@ -402,6 +529,10 @@ const HomeBanner: React.FC = () => {
       surface.removeEventListener('pointerleave', onPointerLeave);
       surface.removeEventListener('pointercancel', onPointerLeave);
       window.removeEventListener('resize', requestResize);
+      document.removeEventListener('pointerdown', onOutsidePointer, true);
+      document.removeEventListener('click', onOutsidePointer, true);
+      document.removeEventListener('focusin', onOutsideFocus, true);
+      window.removeEventListener('blur', releaseLens);
     };
   }, []);
 
