@@ -98,7 +98,13 @@ function compositionScore(stickers: PlacedSticker[], viewport: Size, fullWidth =
   );
 }
 
-export function createBoard(sources: StickerSource[], viewport: Size, random = Math.random, mobile = false): Board {
+export function createBoard(
+  sources: StickerSource[],
+  viewport: Size,
+  random = Math.random,
+  mobile = false,
+  compact = mobile,
+): Board {
   const fullWidth = sources.length > 0 && sources.every((source) => source.kind === 'photo');
   const shuffled = [...sources];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -108,11 +114,12 @@ export function createBoard(sources: StickerSource[], viewport: Size, random = M
   // Resolve sizes and angles once, so resizing with the same seed preserves each sticker's character.
   const templates = shuffled.map((source) => {
     const sizeVariation = random();
-    const longest = (106 + sizeVariation * 24) * Math.sqrt(STICKER_AREA_SCALE);
+    const longest = (106 + sizeVariation * 24) * Math.sqrt(STICKER_AREA_SCALE) * (mobile ? 1.18 : compact ? 1.4 : 1.15);
     const scale =
       source.kind === 'photo'
         ? (130 - 13) / (source.crop?.height ?? source.height)
-        : longest / Math.max(source.width, source.height);
+        : (longest / Math.max(source.width, source.height)) *
+          (source.id === 'wine' ? 1.3225 : source.id === 'shoe' ? 1.035 : source.id === 'drip' ? 0.9 : 1);
     const width = (source.crop?.width ?? source.width) * scale + (source.kind === 'photo' ? 8 : 0);
     const height = (source.crop?.height ?? source.height) * scale + (source.kind === 'photo' ? 13 : 0);
     const rotation = (random() + random() - 1) * (source.kind === 'photo' ? Math.PI / 60 : Math.PI / 10);
@@ -126,8 +133,10 @@ export function createBoard(sources: StickerSource[], viewport: Size, random = M
       bounds: { width: cos * width + sin * height, height: sin * width + cos * height },
     };
   });
-  if (mobile) {
-    const laneWidth = viewport.width / Math.max(1, templates.length);
+  if (compact) {
+    const laneStart = mobile ? 0 : viewport.width * LENS.position + LENS.diameter / 2 + 12;
+    const laneWidth =
+      (mobile ? viewport.width : Math.min(420, viewport.width - laneStart - 8)) / Math.max(1, templates.length);
     return {
       ...viewport,
       stickers: templates.map((template, index) => {
@@ -139,7 +148,7 @@ export function createBoard(sources: StickerSource[], viewport: Size, random = M
           width: template.width * scale,
           height: template.height * scale,
           bounds,
-          x: laneWidth * (index + 0.5) + (random() - 0.5) * 6,
+          x: laneStart + laneWidth * (index + 0.5) + (random() - 0.5) * 6,
           y: Math.max(
             insetY,
             Math.min(viewport.height - insetY, viewport.height * (index % 2 ? 0.66 : 0.34) + (random() - 0.5) * 12),
@@ -203,6 +212,12 @@ export function createBoard(sources: StickerSource[], viewport: Size, random = M
   // Completeness and geometric exclusions take precedence over every aesthetic preference.
   layouts.sort((a, b) => b.stickers.length - a.stickers.length || b.score - a.score);
   const complete = layouts.filter((layout) => layout.stickers.length === layouts[0].stickers.length);
-  const choice = complete[Math.floor(random() * Math.min(5, complete.length))];
+  const spaced = complete.filter((layout) =>
+    layout.stickers.every((sticker, index) =>
+      layout.stickers.slice(index + 1).every((other) => gap(sticker, other) >= 6),
+    ),
+  );
+  const candidates = spaced.length ? spaced : complete;
+  const choice = candidates[Math.floor(random() * Math.min(5, candidates.length))];
   return { ...viewport, stickers: choice.stickers };
 }

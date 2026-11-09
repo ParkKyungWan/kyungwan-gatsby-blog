@@ -16,7 +16,7 @@ export const Inner = styled.div`
   max-width: ${contentMaxWidth};
   margin: 0 auto;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 
   @media ${MOBILE_MEDIA_QUERY} {
     flex-direction: column;
@@ -26,6 +26,11 @@ export const Inner = styled.div`
 
 export const Viewport = styled.div`
   width: 100%;
+  max-width: 660px;
+
+  @media ${MOBILE_MEDIA_QUERY} {
+    max-width: none;
+  }
   height: 160px;
   position: relative;
   overflow: visible;

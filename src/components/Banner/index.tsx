@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { Board, createBoard, Crop, LENS, seededRandom, PlacedSticker } from './board';
 import { MOBILE_MAX_WIDTH } from '@/src/styles/const';
+import { drawCoffeeBrew } from './coffee';
 import { createMagnet, moveMagnet, returnMagnet, selectMagnet, stepMagnet } from './magnet';
 import * as S from './styled';
 
@@ -82,6 +83,21 @@ const HomeBanner: React.FC = () => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const mobileQuery = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`);
 
+    const video = document.createElement('video');
+    video.src = '/banner/guinea-lens.mp4';
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+    video.hidden = true;
+    lensSurface.appendChild(video);
+    let videoOpacity = 0;
+    let coffeeOpacity = 0;
+    let coffeeStarted = 0;
+    let previousDrawTime = 0;
+    let videoRequested = false;
+    let videoFailed = false;
+
     const requestDraw = () => {
       if (!frame && !disposed) frame = requestAnimationFrame(draw);
     };
@@ -158,7 +174,88 @@ const HomeBanner: React.FC = () => {
       lensContext.stroke();
       lensContext.drawImage(canvas, -CANVAS_BLEED, -CANVAS_BLEED, width + CANVAS_BLEED * 2, height + CANVAS_BLEED * 2);
       lensContext.restore();
-      if (animating || moving) requestDraw();
+
+      // The movie replaces only the lens view; the board canvas always keeps the sticker.
+      const guinea = board.stickers.find((sticker) => sticker.id === 'guinea');
+      const lensVisible = mobileQuery.matches
+        ? surface.hasAttribute('data-mobile-selected')
+        : surface.hasAttribute('data-lens-active');
+      const focused = Boolean(
+        lensVisible &&
+          guinea &&
+          magnet.locked &&
+          Math.hypot(magnet.locked.x - guinea.x, magnet.locked.y - guinea.y) < 1,
+      );
+      const dripper = board.stickers.find((sticker) => sticker.id === 'drip');
+      const coffeeFocused = Boolean(
+        lensVisible &&
+          dripper &&
+          magnet.locked &&
+          Math.hypot(magnet.locked.x - dripper.x, magnet.locked.y - dripper.y) < 1,
+      );
+      if (coffeeFocused && !coffeeStarted) coffeeStarted = time;
+      lensSurface.dataset.scene = coffeeFocused ? 'coffee' : focused ? 'guinea' : 'magnify';
+      if (focused && !videoRequested && !videoFailed) {
+        videoRequested = true;
+        video
+          .play()
+          .then(requestDraw)
+          .catch(() => {
+            videoRequested = false;
+            videoFailed = true;
+            requestDraw();
+          });
+      }
+      const showVideo = focused && !videoFailed && !video.paused && video.readyState >= 2;
+      const targetOpacity = showVideo ? 1 : 0;
+      const delta = previousDrawTime ? Math.min(64, time - previousDrawTime) : 16;
+      previousDrawTime = time;
+      videoOpacity = reducedMotion
+        ? targetOpacity
+        : Math.max(0, Math.min(1, videoOpacity + ((showVideo ? 1 : -1) * delta) / 240));
+      if (videoOpacity > 0 && video.readyState >= 2 && video.videoWidth && video.videoHeight) {
+        const side = Math.min(video.videoWidth, video.videoHeight);
+        lensContext.save();
+        lensContext.globalAlpha = videoOpacity;
+        lensContext.drawImage(
+          video,
+          (video.videoWidth - side) / 2,
+          (video.videoHeight - side) / 2,
+          side,
+          side,
+          0,
+          0,
+          diameter,
+          diameter,
+        );
+        lensContext.restore();
+      }
+      if (!focused && videoOpacity === 0) {
+        video.pause();
+        if (videoRequested) video.currentTime = 0;
+        videoRequested = false;
+        videoFailed = false;
+      }
+      const coffeeTarget = coffeeFocused ? 1 : 0;
+      coffeeOpacity = reducedMotion
+        ? coffeeTarget
+        : Math.max(0, Math.min(1, coffeeOpacity + ((coffeeFocused ? 1 : -1) * delta) / 240));
+      if (coffeeOpacity > 0) {
+        lensContext.save();
+        lensContext.globalAlpha = coffeeOpacity;
+        drawCoffeeBrew(lensContext, diameter, reducedMotion ? 9000 : time - coffeeStarted, dripper!, coffeeOpacity);
+        lensContext.restore();
+      }
+      if (!coffeeFocused && coffeeOpacity === 0) coffeeStarted = 0;
+      if (
+        animating ||
+        moving ||
+        videoOpacity !== targetOpacity ||
+        (showVideo && !video.ended) ||
+        coffeeOpacity !== coffeeTarget ||
+        (coffeeFocused && !reducedMotion)
+      )
+        requestDraw();
     };
     const resize = () => {
       if (!assetsReady) return;
@@ -195,6 +292,7 @@ const HomeBanner: React.FC = () => {
         { width, height },
         seededRandom(seed),
         mobileQuery.matches,
+        true,
       );
       surface.removeAttribute('data-mobile-selected');
       setMobileStickers(mobileQuery.matches ? board.stickers : []);
@@ -235,6 +333,13 @@ const HomeBanner: React.FC = () => {
       returnMagnet(magnet, { x: board.width * LENS.position, y: board.height / 2 }, performance.now());
       requestDraw();
     };
+    video.addEventListener('loadeddata', requestDraw);
+    video.addEventListener('playing', requestDraw);
+    const onVideoError = () => {
+      videoFailed = true;
+      requestDraw();
+    };
+    video.addEventListener('error', onVideoError);
     surface.addEventListener('pointerenter', onPointerMove);
     surface.addEventListener('pointermove', onPointerMove);
     surface.addEventListener('pointerleave', onPointerLeave);
@@ -279,6 +384,13 @@ const HomeBanner: React.FC = () => {
     });
     return () => {
       disposed = true;
+      video.pause();
+      video.removeEventListener('loadeddata', requestDraw);
+      video.removeEventListener('playing', requestDraw);
+      video.removeEventListener('error', onVideoError);
+      video.removeAttribute('src');
+      video.load();
+      video.remove();
       redrawRef.current = () => {};
       selectStickerRef.current = () => {};
       cancelAnimationFrame(frame);

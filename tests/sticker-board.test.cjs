@@ -23,12 +23,12 @@ test('size reduction preserves aspect ratio and transparent crop scale', () => {
     () => 0.5,
   );
   const sticker = board.stickers[0];
-  close(sticker.width * sticker.height, 118 * 59 * STICKER_AREA_SCALE * 0.8 ** 2);
+  close(sticker.width * sticker.height, 118 * 59 * STICKER_AREA_SCALE * 0.8 ** 2 * 1.15 ** 2);
   close(sticker.width / sticker.height, 2);
 });
 
 test('complete layouts clear the lens at all widths and avoid crowding on desktop', () => {
-  for (const width of [280, 320, 375, 610, 800, 1200])
+  for (const width of [280, 320, 375, 610, 718, 800, 1200])
     for (let seed = 0; seed < 100; seed++) {
       const board = createBoard(sources, { width, height: 160 }, seededRandom(seed));
       assert.equal(board.stickers.length, sources.length, `width=${width}, seed=${seed}`);
@@ -50,7 +50,7 @@ test('complete layouts clear the lens at all widths and avoid crowding on deskto
             Math.max(0, Math.abs(s.x - other.x) - (s.bounds.width + other.bounds.width) / 2),
             Math.max(0, Math.abs(s.y - other.y) - (s.bounds.height + other.bounds.height) / 2),
           );
-          if (width >= 610) assert.ok(gap >= 6 - 1e-8);
+          if (width >= 610) assert.ok(gap >= 6 - 1e-8, `width=${width}, seed=${seed}, gap=${gap}`);
         }
       }
     }
