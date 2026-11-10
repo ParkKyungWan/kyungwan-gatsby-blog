@@ -1,6 +1,6 @@
 import { getStore } from '@netlify/blobs';
 export function writerStore() {
-  const blobs = getStore({ name: 'writer-content', consistency: 'strong' });
+  const blobs = getStore({ name: 'writer-drafts', consistency: 'strong' });
   const read = (key, type) => blobs.getWithMetadata(key, { type, consistency: 'strong' });
   const write = async (key, data, etag, json = false) => {
     const options = etag ? { onlyIfMatch: etag } : { onlyIfNew: true };
@@ -24,4 +24,15 @@ export function writerStore() {
       return keys;
     },
   };
+}
+
+// The former public Blobs store is deliberately retired; its data was approved for reset.
+export async function resetLegacyStore(store, oldStore) {
+  if (await store.read('maintenance/legacy-reset')) return;
+  const old = oldStore || getStore({ name: 'writer-content', consistency: 'strong' });
+  const keys = [];
+  for await (const page of old.list({ paginate: true })) keys.push(...page.blobs.map((blob) => blob.key));
+  for (let start = 0; start < keys.length; start += 8)
+    await Promise.all(keys.slice(start, start + 8).map((key) => old.delete(key)));
+  await store.write('maintenance/legacy-reset', { completed: true });
 }

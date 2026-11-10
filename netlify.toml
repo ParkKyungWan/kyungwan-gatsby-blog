@@ -9,28 +9,10 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-  external_node_modules = ["react", "react-dom", "@emotion/react", "@emotion/styled", "@radix-ui/react-icons", "@netlify/blobs", "gray-matter", "js-yaml", "sharp"]
+  external_node_modules = ["@netlify/blobs", "gray-matter", "js-yaml", "sharp"]
 
 [[redirects]]
   from = "/api/write/*"
   to = "/.netlify/functions/writer/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/posts"
-  to = "/.netlify/functions/posts"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/posts/*"
-  to = "/.netlify/functions/posts/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/p/*"
-  to = "/.netlify/functions/posts/page/:splat"
   status = 200
   force = true

@@ -17,13 +17,18 @@ async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> 
   if (!result.ok) throw new WriterError(data.error || '저장 서버에 연결하지 못했어요.', result.status);
   return data;
 }
-export const session = () => api<{ signedIn: boolean; configured: boolean; storage: string }>('session');
+export const session = () =>
+  api<{ signedIn: boolean; configured: boolean; storage: string; gitConfigured: boolean }>('session');
 export const login = (password: string) => api('session', 'POST', { password });
-export async function logout() {
-  await api('session', 'DELETE');
-  revisions.clear();
-}
 export const listDrafts = () => api<DraftSummary[]>('drafts');
+export type GitPost = { slug: string; title: string; category: string; date: string; draft: boolean };
+export const listGitPosts = () => api<GitPost[]>('posts');
+export async function importGitPost(slug: string, replace = false) {
+  const draft = await api<Draft>(`posts/${slug}/import`, 'POST', { replace });
+  revisions.set(draft.id, draft.revision ?? 0);
+  return draft;
+}
+export const getPublication = (id: string) => api<Publication | null>(`drafts/${id}/publication`);
 const revisions = new Map<string, number>();
 export async function getDraft(id: string) {
   const draft = await api<Draft>(`drafts/${id}`);
@@ -48,13 +53,14 @@ export function publishDraft(draft: Draft): Promise<Publication> {
     revision: revisions.get(draft.id) ?? draft.revision ?? 0,
   });
 }
-export const unpublishDraft = (id: string, revision: number) => api(`drafts/${id}/unpublish`, 'POST', { revision });
-export async function uploadImage(data: string): Promise<{ src: string; width: number; height: number }> {
+export const unpublishDraft = (id: string, revision: number) =>
+  api<Publication>(`drafts/${id}/unpublish`, 'POST', { revision: revisions.get(id) ?? revision });
+export async function uploadImage(id: string, data: string): Promise<{ src: string; width: number; height: number }> {
   const [header, encoded] = data.split(',');
   const type = header.match(/^data:(image\/(?:webp|jpeg));base64$/)?.[1];
   if (!type || !encoded) throw new Error('사진을 변환하지 못했어요.');
   const bytes = Uint8Array.from(atob(encoded), (char) => char.charCodeAt(0));
-  const result = await fetch('/api/write/images', {
+  const result = await fetch(`/api/write/drafts/${id}/images`, {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'Content-Type': type },

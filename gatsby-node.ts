@@ -146,11 +146,3 @@ export const onCreateDevServer: GatsbyNode['onCreateDevServer'] = ({ app }) => {
   const { installWriter } = require('./server/writer-local.cjs');
   installWriter(app, path.join(__dirname, '.writer-data'));
 };
-
-// Preserve original post-card image previews in runtime post navigation.
-export const onPostBuild: GatsbyNode['onPostBuild'] = () => {
-  require('node:child_process').execFileSync(process.execPath, [
-    path.join(__dirname, 'scripts/prepare-published.cjs'),
-    '--metadata-only',
-  ]);
-};

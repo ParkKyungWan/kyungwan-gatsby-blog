@@ -20,7 +20,7 @@ const PostTemplate: React.FC<PostTemplateProps> = ({ location, data }) => {
   return (
     <Layout location={location}>
       <Seo title={`ruddhks.my | ${curPost?.title}`} description={curPost?.excerpt} pathname={curPost.slug} article />
-      <PostArticle liveNavigation post={curPost} prevPost={prevPost} nextPost={nextPost} />
+      <PostArticle post={curPost} prevPost={prevPost} nextPost={nextPost} />
     </Layout>
   );
 };

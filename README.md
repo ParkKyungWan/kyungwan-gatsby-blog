@@ -1,4 +1,5 @@
 ## Gatsby 기반의 Custom Blog
+
 **WebLink**: [**ruddhks.my**](https://ruddhks.my/)  
 **Templete Base**: [**Github-단민**](https://github.com/danmin20/danmin-gatsby-blog-template)
 
@@ -7,6 +8,7 @@
 ---
 
 ## 라이트 모드
+
 <img width="931" height="872" alt="스크린샷 2026-02-24 오후 7 42 29" src="https://github.com/user-attachments/assets/16061f75-18c2-4ee9-b177-02416b31e31e" />
 <img width="931" alt="스크린샷 2026-02-24 오후 7 44 16" src="https://github.com/user-attachments/assets/8919e671-0db4-40d9-8732-522f161850e0" />
 
@@ -15,6 +17,7 @@
 ---
 
 ## 다크 모드
+
 <img width="931" height="872" alt="스크린샷 2026-02-24 오후 7 43 34" src="https://github.com/user-attachments/assets/7811bfca-3dcf-4964-87bc-4006a5d2245e" />
 <img width="931" alt="스크린샷 2026-02-24 오후 7 43 56" src="https://github.com/user-attachments/assets/52221db3-ea0b-4e78-9f7e-3f1fb9e7b589" />
 
@@ -60,7 +63,6 @@ categories: ['취향', '책과 영화']
 featured: false
 draft: true
 ---
-
 ## 본문
 ```
 
@@ -110,3 +112,7 @@ npm run build
 렌즈 안쪽 반지름 80%는 기본 배치에서 비워두며, 시각적 균형과 간격을 평가해 무작위 배치를 선택합니다.
 노트 위에서 마우스를 움직이면 렌즈가 짧게 버티다가 끌려와 가까운 스티커에 붙고,
 노트를 벗어나면 왼쪽의 원래 위치로 돌아갑니다.
+
+## 웹에서 글 작성
+
+`/write/`에서 글과 사진을 임시저장하고, 발행할 때만 `main`의 `content/<숫자>/index.md`와 첨부 파일로 반영합니다. 기존 글은 Git의 Markdown 원문으로 불러옵니다. 공개 사이트는 기존 Gatsby 빌드 경로만 사용하며, Blobs는 비공개 임시저장 용도입니다. 서버 설정과 발행·공개 해제 동작은 [글쓰기 안내](docs/writer.md)를 참고하세요.

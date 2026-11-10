@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import usePostNavigation from '../../hooks/usePostNavigation';
 import PostHeader from '../PostHeader';
 import PostNavigator from '../PostNavigator';
 import PostClass from '../../models/post';
@@ -10,9 +9,7 @@ const PostArticle: React.FC<{
   post: PostClass;
   prevPost?: PostClass;
   nextPost?: PostClass;
-  liveNavigation?: boolean;
-}> = ({ post, prevPost, nextPost, liveNavigation = false }) => {
-  const navigation = usePostNavigation(post.slug, liveNavigation, prevPost, nextPost);
+}> = ({ post, prevPost, nextPost }) => {
   const markdownRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (markdownRef.current) return recoverMarkdownImages(markdownRef.current);
@@ -23,7 +20,7 @@ const PostArticle: React.FC<{
       <S.PostContent>
         <div ref={markdownRef} className='markdown' dangerouslySetInnerHTML={{ __html: post.html }} />
       </S.PostContent>
-      <PostNavigator {...navigation} />
+      <PostNavigator prevPost={prevPost} nextPost={nextPost} />
     </S.Wrapper>
   );
 };

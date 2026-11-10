@@ -31,11 +31,7 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
             </S.MiddleContent>
           </>
         );
-        return slug.startsWith('/p/') ? (
-          <S.ExternalItem data-photo-preview key={id} href={slug}>
-            {content}
-          </S.ExternalItem>
-        ) : (
+        return (
           <S.Item data-photo-preview key={id} to={slug}>
             {content}
           </S.Item>

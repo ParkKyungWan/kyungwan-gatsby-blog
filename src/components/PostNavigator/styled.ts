@@ -60,9 +60,6 @@ const postCardStyle = (theme: Theme) => css`
 export const PostCard = styled(Link)`
   ${({ theme }) => postCardStyle(theme)};
 `;
-export const NativePostCard = styled.a`
-  ${({ theme }) => postCardStyle(theme)};
-`;
 export const EmptyCard = styled.div(({ theme }) => [
   cardStyle(theme),
   { 'cursor': 'default', 'opacity': 0.4, '&:hover': { backgroundColor: theme.color.gray10 } },

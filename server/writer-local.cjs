@@ -5,7 +5,11 @@ const { parseEnv } = require('node:util');
 function fileStore(root) {
   let queue = Promise.resolve();
   const filename = (key, raw = false) => {
-    if (!/^(drafts|images|image-meta|published|indexes)\/[a-zA-Z0-9-]{1,160}(?:\.(?:md|webp|jpg))?$/.test(key))
+    if (
+      !/^(drafts|draft-assets|draft-files|maintenance)\//.test(key) ||
+      key.split('/').some((part) => !part || part === '.' || part === '..') ||
+      /[\\\x00-\x1f]/.test(key)
+    )
       throw new Error('Invalid key');
     return path.join(root, key + (raw ? '' : '.json'));
   };
@@ -47,21 +51,32 @@ function fileStore(root) {
     writeText: (key, data, etag) => writeBytes(key, data, etag, true),
     writeBinary: (key, data, etag) => writeBytes(key, data, etag, true),
     async list(prefix) {
-      if (!/^(drafts|images|image-meta|published|indexes)\/$/.test(prefix)) throw new Error('Invalid prefix');
-      try {
-        return (await fs.readdir(path.join(root, prefix)))
-          .filter((name) => /\.(json|md|webp|jpg)$/.test(name))
-          .map((name) => prefix + name.replace(/\.json$/, ''));
-      } catch (e) {
-        if (e.code === 'ENOENT') return [];
-        throw e;
-      }
+      if (!/^(drafts|draft-assets|draft-files|maintenance)\/$/.test(prefix)) throw new Error('Invalid prefix');
+      const walk = async (dir, base) => {
+        try {
+          const entries = await fs.readdir(dir, { withFileTypes: true });
+          const paths = await Promise.all(
+            entries.map(async (entry) =>
+              entry.isDirectory()
+                ? walk(path.join(dir, entry.name), base + entry.name + '/')
+                : entry.isFile()
+                ? [base + entry.name.replace(/\.json$/, '')]
+                : [],
+            ),
+          );
+          return paths.flat();
+        } catch (error) {
+          if (error.code === 'ENOENT') return [];
+          throw error;
+        }
+      };
+      return walk(path.join(root, prefix), prefix);
     },
   };
 }
 function installWriter(app, root) {
   const handler = Promise.all([
-    Promise.all([import('./writer.mjs'), import('./public-posts.mjs')]),
+    import('./writer.mjs'),
     fs
       .readFile(path.join(root, 'allowed-hosts.json'), 'utf8')
       .then(JSON.parse)
@@ -76,19 +91,23 @@ function installWriter(app, root) {
         if (error.code === 'ENOENT') return process.env;
         throw error;
       }),
-  ]).then(([[{ createWriter }, { createPublicPosts }], hosts, env]) => {
+  ]).then(([{ createWriter }, hosts, env]) => {
     const store = fileStore(root);
-    const publicPosts = createPublicPosts({ store });
     const writer = createWriter({
       store,
       local: true,
+      resetLegacy: async () => {
+        if (await store.read('maintenance/legacy-reset')) return;
+        for (const name of ['drafts', 'images', 'image-meta', 'published', 'indexes'])
+          await fs.rm(path.join(root, name), { recursive: true, force: true });
+        await store.write('maintenance/legacy-reset', { completed: true });
+      },
       env,
       localHosts: Array.isArray(hosts) ? hosts.filter((host) => typeof host === 'string') : [],
     });
-    return (request) =>
-      /^\/(api\/posts|p)(\/|$)/.test(new URL(request.url).pathname) ? publicPosts(request) : writer(request);
+    return writer;
   });
-  app.use(['/api/write', '/api/posts', '/p'], async (req, res) => {
+  app.use('/api/write', async (req, res) => {
     try {
       let body;
       if (!['GET', 'HEAD'].includes(req.method)) {

@@ -1,17 +1,20 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Block, BlockType, Draft, Publication, exportHTML, isHeading, makeBlock, makeDraft, wordCount } from './model';
+import { Block, BlockType, Draft, Publication, isHeading, makeBlock, makeDraft } from './model';
 import {
   DraftSummary,
   getDraft,
   imageBlockSource,
   listDrafts,
   login,
-  logout,
   saveDraft,
   session,
   uploadImage,
   publishDraft,
   unpublishDraft,
+  listGitPosts,
+  importGitPost,
+  getPublication,
+  GitPost,
 } from './storage';
 import { EditorSurface } from './styled';
 import { insertUploadedPhoto, attachPhotosSequentially } from './photo-upload';
@@ -72,6 +75,8 @@ export default function WriteEditor() {
   const [drafts, setDrafts] = useState<DraftSummary[]>([]);
   const [auth, setAuth] = useState<'loading' | 'ready' | 'login' | 'setup' | 'error'>('loading');
   const [storage, setStorage] = useState('');
+  const [gitConfigured, setGitConfigured] = useState(false);
+  const [gitPosts, setGitPosts] = useState<GitPost[]>([]);
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'saved' | 'dirty' | 'saving' | 'error'>('saved');
   const [notice, setNotice] = useState('');
@@ -86,8 +91,40 @@ export default function WriteEditor() {
   const [showEmoji, setShowEmoji] = useState(false);
   const [publication, setPublication] = useState<Publication | null>(null);
   useEffect(() => {
+    let cancelled = false;
     setPublication(draft?.publication ?? null);
+    if (draft?.revision)
+      void getPublication(draft.id)
+        .then((value) => {
+          if (!cancelled) setPublication(value);
+        })
+        .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [draft?.id]);
+  useEffect(() => {
+    if (!draft || publication?.state !== 'pending') return;
+    let cancelled = false;
+    const id = draft.id;
+    const timer = setInterval(() => {
+      void getPublication(id)
+        .then((value) => {
+          if (!cancelled) {
+            setPublication(value);
+            if (value?.state === 'published')
+              setNotice(value.draft ? '공개 해제 배포가 완료됐어요.' : '발행이 완료됐어요.');
+            else if (value?.state === 'failed')
+              setNotice('배포에 실패했어요. Git 변경 내역과 배포 로그를 확인해 주세요.');
+          }
+        })
+        .catch(() => {});
+    }, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [draft?.id, publication?.commitSha, publication?.state]);
   const fileInput = useRef<HTMLInputElement>(null);
   const titleInput = useRef<HTMLTextAreaElement>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -107,6 +144,7 @@ export default function WriteEditor() {
     try {
       const state = await session();
       setStorage(state.storage);
+      setGitConfigured(state.gitConfigured);
       if (!state.configured) {
         setAuth('setup');
         return;
@@ -139,12 +177,24 @@ export default function WriteEditor() {
       setStatus('saving');
       try {
         const result = await saveDraft(snapshot);
-        saved.current = snapshot;
+        const enriched = {
+          ...snapshot,
+          files: result.files,
+          revision: result.revision,
+          ...(snapshot.markdown === undefined
+            ? {}
+            : { title: result.title, category: result.category, emoji: result.emoji }),
+        };
+        saved.current = current.current === snapshot ? enriched : snapshot;
+        if (current.current === snapshot) {
+          current.current = enriched;
+          setDraft(enriched);
+        }
         setDrafts((list) => [
           { id: result.id, title: result.title, category: result.category, updatedAt: result.updatedAt },
           ...list.filter((item) => item.id !== result.id),
         ]);
-        if (current.current === snapshot) {
+        if (current.current === enriched) {
           setStatus('saved');
           setNotice('');
         }
@@ -323,14 +373,18 @@ export default function WriteEditor() {
     try {
       const result = await attachPhotosSequentially(Array.from(files), {
         prepare: imageBlockSource,
-        upload: uploadImage,
+        upload: (data) => uploadImage(targetDraft, data),
         progress: (index, total) => setNotice(`사진 ${index}/${total} · 첨부한 사진부터 저장하고 있어요…`),
         failure: (file, error) => failures.push(`${file.name}: ${message(error)}`),
         commit: async (file, uploaded) => {
           const latest = current.current;
           if (!latest || latest.id !== targetDraft) throw new Error('편집 중인 글이 변경됐어요.');
           const photo = { ...makeBlock('image'), ...uploaded, alt: file.name };
-          const next = insertUploadedPhoto(latest, photo, cursor);
+          const name = decodeURIComponent(uploaded.src.split('/').pop()!);
+          const next =
+            latest.markdown !== undefined
+              ? { ...latest, markdown: latest.markdown + `\n\n![](<./${name}>)\n`, updatedAt: Date.now() }
+              : insertUploadedPhoto(latest, photo, cursor);
           cursor = photo.id;
           clearTimeout(timer.current);
           current.current = next;
@@ -436,6 +490,28 @@ export default function WriteEditor() {
       setBusy(false);
     }
   };
+  const importPost = async (slug: string, replace = false) => {
+    if (busy) return;
+    clearTimeout(timer.current);
+    setBusy(true);
+    try {
+      if (current.current && !(await persist(current.current))) return;
+      const next = await importGitPost(slug, replace);
+      saved.current = next;
+      current.current = next;
+      setDraft(next);
+      setPublication(next.publication ?? null);
+      setStatus('saved');
+      setPreview(false);
+      setShowDrafts(false);
+      setDrafts(await listDrafts());
+      setNotice('Git 원문을 불러왔어요. 수정 내용은 발행할 때만 main에 반영됩니다.');
+    } catch (error) {
+      setNotice(message(error));
+    } finally {
+      setBusy(false);
+    }
+  };
   const publish = async () => {
     const snapshot = current.current;
     if (!snapshot || busy) return;
@@ -444,13 +520,13 @@ export default function WriteEditor() {
     setNotice('');
     try {
       if (!(await persist(snapshot))) return;
-      if (current.current !== snapshot) {
+      if (current.current !== saved.current) {
         setNotice('작성 중인 변경을 저장한 뒤 다시 발행해 주세요.');
         return;
       }
       const result = await publishDraft(snapshot);
       setPublication(result);
-      setNotice('글을 발행했어요. 공개된 글을 확인해 보세요.');
+      setNotice('main에 반영했어요. Gatsby 빌드·배포가 끝나면 사이트에 공개됩니다.');
     } catch (error) {
       setNotice(message(error));
     } finally {
@@ -458,67 +534,14 @@ export default function WriteEditor() {
     }
   };
   const unpublish = async () => {
-    if (!draft || !publication || busy) return;
+    if (!draft || (!publication && !draft.origin) || busy) return;
     setBusy(true);
     try {
-      await unpublishDraft(draft.id, publication.revision);
-      setPublication(null);
-      setNotice('비공개로 전환했어요. 저장된 글은 그대로 남아 있어요.');
-    } catch (error) {
-      setNotice(message(error));
-    } finally {
-      setBusy(false);
-    }
-  };
-  const download = async () => {
-    if (!draft) return;
-    setBusy(true);
-    try {
-      const blocks = await Promise.all(
-        draft.blocks.map(async (block) => {
-          if (block.type !== 'image' || !block.src) return block;
-          const result = await fetch(block.src, { credentials: 'same-origin' });
-          if (!result.ok) throw new Error('사진을 내보내지 못했어요. 다시 시도해 주세요.');
-          const blob = await result.blob();
-          const src = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result));
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-          return { ...block, src };
-        }),
-      );
-      const url = URL.createObjectURL(
-        new Blob([exportHTML({ ...draft, blocks })], { type: 'text/html;charset=utf-8' }),
-      );
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${(draft.title || '제목 없는 글').replace(/[\\/:*?"<>|]/g, '-')}.html`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (error) {
-      setNotice(message(error));
-    } finally {
-      setBusy(false);
-    }
-  };
-  const signOut = async () => {
-    if (busy || saving.current) return;
-    setBusy(true);
-    clearTimeout(timer.current);
-    try {
-      const snapshot = current.current;
-      if (snapshot && saved.current !== snapshot && !(await persist(snapshot))) return;
-      await logout();
-      saved.current = null;
-      setDraft(null);
-      setDrafts([]);
-      setPublication(null);
-      setPreview(false);
-      setShowDrafts(false);
-      setNotice('');
-      setAuth('login');
+      clearTimeout(timer.current);
+      if (!(await persist(draft))) return;
+      const result = await unpublishDraft(draft.id, draft.revision ?? publication?.revision ?? 0);
+      setPublication(result);
+      setNotice('공개 해제를 main에 반영했어요. 배포가 끝나면 사이트에서 내려갑니다.');
     } catch (error) {
       setNotice(message(error));
     } finally {
@@ -602,24 +625,7 @@ export default function WriteEditor() {
       }}
     >
       <header className='writer-bar'>
-        <div className='bar-left'>
-          <span className='eyebrow'>WRITE</span>
-          <span className={`save-state ${status}`} role='status'>
-            {busy
-              ? '처리 중…'
-              : status === 'saved'
-              ? '저장됨'
-              : status === 'saving'
-              ? '저장 중…'
-              : status === 'error'
-              ? '저장 실패'
-              : '작성 중'}
-          </span>
-        </div>
         <div className='bar-actions'>
-          <button onClick={() => void signOut()} disabled={busy || status === 'saving'}>
-            로그아웃
-          </button>
           <button onClick={() => setShowDrafts(!showDrafts)} aria-expanded={showDrafts} disabled={busy}>
             내 글 <span className='count'>{drafts.length}</span>
           </button>
@@ -630,7 +636,13 @@ export default function WriteEditor() {
             }}
             aria-pressed={preview}
           >
-            {preview ? '이어서 쓰기' : '미리보기'}
+            {draft.markdown !== undefined
+              ? preview
+                ? '원문 편집'
+                : '원문 읽기'
+              : preview
+              ? '이어서 쓰기'
+              : '미리보기'}
           </button>
           <button
             disabled={busy || status === 'saving'}
@@ -642,25 +654,22 @@ export default function WriteEditor() {
             저장
           </button>
           <button className='primary' disabled={busy || status === 'saving'} onClick={() => void publish()}>
-            {publication ? '업데이트' : '발행'}
+            {publication && !publication.draft ? '업데이트' : '발행'}
           </button>
         </div>
       </header>
-      {publication && (
-        <div className='publication-info'>
-          <span>공개된 글 · 수정 내용은 업데이트 후 반영돼요.</span>
-          <a href={publication.slug} target='_blank' rel='noopener noreferrer'>
-            발행된 글 보기 ↗
-          </a>
-          <button disabled={busy} onClick={() => void unpublish()}>
-            비공개로 전환
-          </button>
-        </div>
+      {!gitConfigured && (
+        <p className='storage-note'>임시저장은 가능합니다. 발행하려면 서버에 GitHub 연결을 설정해 주세요.</p>
       )}
       {showDrafts && (
         <section className='draft-panel' aria-label='저장한 글'>
           <div className='panel-heading'>
             <h2>나의 이야기</h2>
+            {publication && !publication.draft && (
+              <button disabled={busy} onClick={() => void unpublish()}>
+                공개 해제
+              </button>
+            )}
             <button disabled={busy} onClick={() => void switchDraft()}>
               ＋ 새 글
             </button>
@@ -682,6 +691,34 @@ export default function WriteEditor() {
               ))}
             </div>
           )}
+          <div className='panel-heading'>
+            <h3>Git에 저장된 글</h3>
+            <button
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  setGitPosts(await listGitPosts());
+                } catch (error) {
+                  setNotice(message(error));
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              기존 글 불러오기
+            </button>
+          </div>
+          <div className='draft-list'>
+            {gitPosts.map((item) => (
+              <button key={item.slug} disabled={busy} onClick={() => void importPost(item.slug)}>
+                <span>{item.title}</span>
+                <span>
+                  /{item.slug}/ {item.draft ? '· 비공개' : ''}
+                </span>
+              </button>
+            ))}
+          </div>
           <p className='storage-note'>
             {storage === 'local-server'
               ? '이 컴퓨터의 로컬 서버에 저장하고 있어요.'
@@ -689,7 +726,54 @@ export default function WriteEditor() {
           </p>
         </section>
       )}
-      {preview ? (
+      {draft.markdown !== undefined ? (
+        <section className='source-editor'>
+          <div className='panel-heading'>
+            <h2>{draft.title || 'Markdown 원문'}</h2>
+            {draft.origin && !publication && !draft.origin.draft && (
+              <button disabled={busy} onClick={() => void unpublish()}>
+                공개 해제
+              </button>
+            )}
+            <button disabled={busy} onClick={() => fileInput.current?.click()}>
+              사진 첨부
+            </button>
+            {draft.origin && (
+              <button
+                disabled={busy}
+                onClick={() => {
+                  if (window.confirm('현재 임시저장본을 버리고 Git의 최신 원문을 다시 불러올까요?'))
+                    void importPost(draft.origin!.slug, true);
+                }}
+              >
+                Git 원문 다시 불러오기
+              </button>
+            )}
+          </div>
+          <p className='storage-note'>
+            기존 문법과 Frontmatter를 원문 그대로 보존합니다. 사진은 아래 파일명을 상대 경로로 참조하세요.
+          </p>
+          <textarea
+            aria-label='Markdown 원문'
+            value={draft.markdown}
+            readOnly={busy || preview}
+            onChange={(event) => change((value) => ({ ...value, markdown: event.target.value }))}
+            spellCheck={false}
+          />
+          <div className='source-files'>
+            {Object.keys(draft.files || {}).map((name) => (
+              <a
+                key={name}
+                href={`/api/write/drafts/${draft.id}/files/${name.split('/').map(encodeURIComponent).join('/')}`}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                {name}
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : preview ? (
         <div className='original-post-preview'>
           <PostArticle
             post={
@@ -860,7 +944,6 @@ export default function WriteEditor() {
                     {command.icon}
                   </button>
                 ))}
-              <span className='format-hint'>/ 로 더 쉽게</span>
               <button
                 className='outline-toggle'
                 onClick={() => setShowOutline(!showOutline)}
@@ -956,18 +1039,7 @@ export default function WriteEditor() {
                       loading='lazy'
                       decoding='async'
                     />
-                    {preview ? (
-                      block.text && <figcaption>{block.text}</figcaption>
-                    ) : (
-                      <input
-                        className='caption'
-                        aria-label='사진 설명'
-                        placeholder='사진에 한마디를 남겨보세요'
-                        value={block.text}
-                        onFocus={() => setActive(block.id)}
-                        onChange={(event) => updateBlock(block.id, { text: event.target.value })}
-                      />
-                    )}
+                    {block.text && <figcaption>{block.text}</figcaption>}
                   </figure>
                 ) : block.type === 'divider' ? (
                   <hr />
@@ -1026,15 +1098,18 @@ export default function WriteEditor() {
           )}
         </>
       )}
-      <footer className='writer-footer'>
-        <span>
-          {wordCount(draft).toLocaleString()}자 <span className='footer-dot'>·</span>{' '}
-          {storage === 'local-server' ? '로컬 서버 보관' : '서버 보관'}
-        </span>
-        <button onClick={() => void download()} disabled={busy}>
-          글 내보내기 ↗
-        </button>
-      </footer>
+      <button
+        type='button'
+        className='back-to-top'
+        onClick={() => {
+          window.scrollTo({
+            top: 0,
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          });
+        }}
+      >
+        맨 위로 ↑
+      </button>
       {notice && (
         <div className='notice' role={status === 'error' ? 'alert' : 'status'}>
           {notice}

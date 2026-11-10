@@ -52,9 +52,6 @@ const photoItemStyles = (theme: Theme) => css`
 export const Item = styled(Link)`
   ${({ theme }) => photoItemStyles(theme)};
 `;
-export const ExternalItem = styled.a`
-  ${({ theme }) => photoItemStyles(theme)};
-`;
 
 export const TopContent = styled.div`
   width: 100%;

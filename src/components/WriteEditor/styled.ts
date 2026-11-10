@@ -52,51 +52,27 @@ export const EditorSurface = styled.div`
     color: ${({ theme }) => theme.color.gray40};
   }
   .writer-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
     border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
-    padding: 15px 0;
-    margin-bottom: 64px;
-  }
-  .bar-left,
-  .bar-actions {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+    padding: 16px 0;
+    margin-bottom: 24px;
   }
   .bar-actions {
-    gap: 5px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
   }
   .bar-actions button {
-    padding: 8px 11px;
-    font-size: 12px;
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 14px;
     white-space: nowrap;
   }
   .eyebrow {
     font-size: 10px;
     letter-spacing: 0.18em;
     color: var(--muted);
-  }
-  .save-state {
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .save-state::before {
-    content: '';
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.55;
-  }
-  .save-state.error {
-    color: #b76b5b;
   }
   .count {
     color: var(--muted);
@@ -113,26 +89,6 @@ export const EditorSurface = styled.div`
   }
   .original-post-preview {
     font-family: GmarketSansMedium, sans-serif;
-  }
-  .publication-info {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin: -40px 0 32px;
-    color: var(--muted);
-    font-size: 11px;
-    line-height: 1.8;
-  }
-  .publication-info a {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .publication-info button {
-    color: var(--muted);
-    font-size: 11px;
-    padding: 5px;
-    margin-left: auto;
   }
   .document-meta {
     display: flex;
@@ -262,11 +218,6 @@ export const EditorSurface = styled.div`
     color: var(--ink);
     background: var(--soft);
   }
-  .format-hint {
-    margin-left: 12px;
-    font-size: 10px;
-    color: ${({ theme }) => theme.color.gray60};
-  }
   .format-bar .outline-toggle {
     display: none;
     margin-left: auto;
@@ -369,7 +320,6 @@ export const EditorSurface = styled.div`
     margin: 0 auto;
     border-radius: 5px;
   }
-  .caption,
   figcaption {
     display: block;
     width: 100%;
@@ -395,11 +345,11 @@ export const EditorSurface = styled.div`
   }
   .block-handle > button,
   .block-handle summary {
-    width: 21px;
-    height: 27px;
+    width: 32px;
+    height: 41px;
     display: grid;
     place-items: center;
-    font-size: 15px;
+    font-size: 23px;
     color: var(--muted);
     cursor: pointer;
     border-radius: 4px;
@@ -416,7 +366,7 @@ export const EditorSurface = styled.div`
   .block-options {
     position: absolute;
     left: 0;
-    top: 32px;
+    top: 46px;
     width: 135px;
     padding: 5px;
     border: 1px solid var(--line);
@@ -489,22 +439,17 @@ export const EditorSurface = styled.div`
     text-align: left;
     width: 100%;
   }
-  .writer-footer {
-    border-top: 1px solid var(--line);
-    margin-top: 24px;
-    padding: 17px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: var(--muted);
-    font-size: 10px;
-  }
-  .writer-footer button {
-    padding: 6px;
-    font-size: 11px;
-  }
-  .footer-dot {
-    margin: 0 7px;
+  .back-to-top {
+    display: block;
+    width: 100%;
+    min-height: 60px;
+    margin-top: 28px;
+    padding: 18px 24px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--soft);
+    font-size: 16px;
+    font-weight: 500;
   }
   .preview-outline-toggle {
     display: none;
@@ -553,7 +498,7 @@ export const EditorSurface = styled.div`
   }
   .draft-panel {
     border-bottom: 1px solid var(--line);
-    margin: -38px 0 40px;
+    margin: 0 0 24px;
     padding: 0 0 20px;
   }
   .panel-heading {
@@ -681,25 +626,16 @@ export const EditorSurface = styled.div`
   @media (max-width: 768px) {
     padding: 0 0 40px;
     .writer-bar {
-      margin-bottom: 42px;
-      gap: 4px;
+      margin-bottom: 20px;
       padding: 12px 0;
     }
-    .bar-left {
-      gap: 9px;
-    }
     .bar-actions {
-      gap: 0;
+      gap: 8px;
     }
     .bar-actions button {
-      padding: 8px;
-      font-size: 11px;
-    }
-    .save-state {
-      font-size: 10px;
-    }
-    .save-state::before {
-      display: none;
+      padding: 12px 6px;
+      min-height: 48px;
+      font-size: 12px;
     }
     .document-title {
       font-size: 30px;
@@ -718,15 +654,11 @@ export const EditorSurface = styled.div`
       gap: 2px;
       margin-bottom: 22px;
     }
-    .format-hint {
-      margin-left: 5px;
-      font-size: 9px;
-    }
     .format-bar button {
       min-width: 29px;
     }
     .writing-body {
-      padding-left: 19px;
+      padding-left: 56px;
     }
     .editable,
     .preview p {
@@ -737,14 +669,14 @@ export const EditorSurface = styled.div`
       opacity: 1;
     }
     .block-handle > button {
-      width: 18px;
-      font-size: 15px;
+      width: 27px;
+      font-size: 23px;
     }
     .block-handle details {
       display: block;
     }
     .block-handle summary {
-      width: 18px;
+      width: 27px;
     }
     .editable.h1,
     .preview h1 {
@@ -758,17 +690,13 @@ export const EditorSurface = styled.div`
     .preview h3 {
       font-size: 18px;
     }
-    .draft-panel {
-      margin-top: -20px;
-    }
     .preview {
       padding-left: 0;
     }
   }
-  /* Keep mobile focus from triggering the browser's small-input zoom. */
+  /* Keep mobile focus from triggering the browser small-input zoom. */
   @media (max-width: 768px), (pointer: coarse) {
     .document-meta input,
-    .caption,
     .gate input {
       font-size: 16px;
     }
@@ -779,5 +707,29 @@ export const EditorSurface = styled.div`
       transition: none !important;
       scroll-behavior: auto !important;
     }
+  }
+  .source-editor {
+    max-width: 900px;
+    margin: 0 auto 24px;
+    padding: 0 20px;
+  }
+  .source-editor textarea {
+    width: 100%;
+    min-height: 65vh;
+    resize: vertical;
+    padding: 16px;
+    border: 1px solid #d5d5d8;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    color: inherit;
+    background: transparent;
+  }
+  .source-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
   }
 `;

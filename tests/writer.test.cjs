@@ -65,15 +65,23 @@ test('draft and photo survive a fresh server instance; stale revisions cannot ov
   const photoBytes = await require('sharp')({ create: { width: 640, height: 480, channels: 3, background: '#abcdef' } })
     .webp()
     .toBuffer();
-  const data = 'data:image/webp;base64,' + photoBytes.toString('base64');
-  const uploaded = await handle(request('images', 'POST', { data }, cookie));
+  const uploaded = await handle(
+    new Request(origin + '/api/write/drafts/test-draft/images', {
+      method: 'POST',
+      headers: { 'Origin': origin, 'Cookie': cookie, 'Content-Type': 'image/webp' },
+      body: photoBytes,
+    }),
+  );
   assert.equal(uploaded.status, 201);
   const { src } = await uploaded.json();
   const imageRoute = src.replace('/api/write/', '');
   assert.equal((await restarted(request(imageRoute))).status, 401);
   const image = await restarted(request(imageRoute, 'GET', undefined, cookie));
   assert.equal(image.headers.get('content-type'), 'image/webp');
-  assert.deepEqual(Buffer.from(await image.arrayBuffer()), photoBytes);
+  const bytes = Buffer.from(await image.arrayBuffer());
+  const metadata = await require('sharp')(bytes).metadata();
+  assert.equal(metadata.format, 'webp');
+  assert.equal(metadata.width, 640);
 });
 test('invalid blocks, image URLs, and malformed bodies never become stored drafts', async (t) => {
   const { handle, cookie } = await fixture(t);
@@ -88,7 +96,7 @@ test('invalid blocks, image URLs, and malformed bodies never become stored draft
   ]) {
     assert.equal((await handle(request('drafts/test-draft', 'PUT', { ...draft, blocks }, cookie))).status, 400);
   }
-  assert.equal((await handle(request('images', 'POST', { data: 'data:image/webp;base64,YWJj' }, cookie))).status, 400);
+  assert.equal((await handle(request('drafts/test-draft/images', 'POST', { data: 'invalid' }, cookie))).status, 400);
   assert.deepEqual(await (await handle(request('drafts', 'GET', undefined, cookie))).json(), []);
 });
 test('session cookie is HttpOnly, signed, secure, and expires', async (t) => {
@@ -105,7 +113,7 @@ test('session cookie is HttpOnly, signed, secure, and expires', async (t) => {
   assert.equal((await handle(request('drafts', 'GET', undefined, cookie.split(';')[0]))).status, 401);
 });
 
-test('loopback and allowlisted tailnet hosts require a session; public readers are unaffected', async (t) => {
+test('loopback and allowlisted tailnet hosts require a signed session', async (t) => {
   const { root } = await fixture(t);
   const local = createWriter({ store: fileStore(root), env, local: true, localHosts: ['100.74.206.81'] });
   for (const host of ['127.0.0.1:8000', 'localhost:8000', '100.74.206.81:8000']) {
@@ -120,10 +128,10 @@ test('loopback and allowlisted tailnet hosts require a session; public readers a
     for (const [route, method, body] of [
       ['drafts', 'GET'],
       ['drafts/test-draft', 'GET'],
-      ['images/private-photo', 'GET'],
+      ['drafts/test-draft/files/private.webp', 'GET'],
       ['drafts/test-draft/publish', 'POST', { revision: 1 }],
       ['drafts/test-draft', 'PUT', draft],
-      ['images', 'POST', {}],
+      ['drafts/test-draft/images', 'POST', {}],
     ]) {
       assert.equal((await local(req(route, method, body))).status, 401);
     }
@@ -137,11 +145,6 @@ test('loopback and allowlisted tailnet hosts require a session; public readers a
   assert.equal((await local(new Request('http://other.example/api/write/drafts'))).status, 403);
   const missingConfig = createWriter({ store: fileStore(root), env: {}, local: true });
   assert.equal((await missingConfig(new Request('http://localhost/api/write/drafts'))).status, 503);
-  const { createPublicPosts } = await import('../server/public-posts.mjs');
-  assert.equal(
-    (await createPublicPosts({ store: fileStore(root) })(new Request('https://blog.example/api/posts'))).status,
-    200,
-  );
 });
 
 test('main emoji is saved with drafts and preserved on reload', async (t) => {
