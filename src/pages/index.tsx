@@ -9,6 +9,7 @@ import Section from '../components/Section';
 import Seo from '../components/Seo';
 import useHobbiesFilter from '../hooks/useHobbiesFilter';
 import usePostsFilter from '../hooks/usePostsFilter';
+import usePublishedPosts from '../hooks/usePublishedPosts';
 import Layout from '../layout';
 import PostClass from '../models/post';
 import { AllMarkdownRemark } from '../type';
@@ -21,7 +22,11 @@ type HomeProps = {
 };
 
 const Home: React.FC<HomeProps> = ({ location, data }) => {
-  const allPosts = data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node));
+  const {
+    posts: allPosts,
+    error: postsError,
+    retry: retryPosts,
+  } = usePublishedPosts(data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node)));
   const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(allPosts);
   const { categoriesH, selectedCategoryH, handleCategoryClickH } = useHobbiesFilter();
   const posts = filteredPosts.slice(0, 3);
@@ -57,6 +62,11 @@ const Home: React.FC<HomeProps> = ({ location, data }) => {
             selectedCategory={selectedCategory}
             onCategoryClick={handleCategoryClick}
           /> */}
+          {postsError && (
+            <p role='status'>
+              새 글을 불러오지 못했어요. <button onClick={retryPosts}>다시 불러오기</button>
+            </p>
+          )}
           <PostList posts={posts} />
           <PostStyles.MoreLink to='/posts/' aria-label='모든 게시글 보기'>
             더보기

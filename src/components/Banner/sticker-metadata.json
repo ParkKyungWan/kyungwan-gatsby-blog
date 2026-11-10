@@ -1,0 +1,30 @@
+{
+  "guinea": {
+    "x": 8,
+    "y": 7,
+    "width": 196,
+    "height": 178,
+    "visualWeight": 0.42945209307151444
+  },
+  "shoe": {
+    "x": 15,
+    "y": 5,
+    "width": 189,
+    "height": 175,
+    "visualWeight": 0.38842719127760833
+  },
+  "wine": {
+    "x": 49,
+    "y": 16,
+    "width": 84,
+    "height": 174,
+    "visualWeight": 0.2412946156883352
+  },
+  "drip": {
+    "x": 10,
+    "y": 9,
+    "width": 179,
+    "height": 173,
+    "visualWeight": 0.30298692040694625
+  }
+}

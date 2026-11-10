@@ -14,8 +14,8 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
     <S.Wrapper>
       {posts.map((post) => {
         const { id, slug, title, date, filteredCategories, excerpt } = post;
-        return (
-          <S.Item data-photo-preview key={id} to={slug}>
+        const content = (
+          <>
             <PhotoFan images={post.previewImages} />
             <S.TopContent>
               <S.Title>{title}</S.Title>
@@ -29,6 +29,15 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
               </S.Categories>
               <S.Excerpt>{excerpt}</S.Excerpt>
             </S.MiddleContent>
+          </>
+        );
+        return slug.startsWith('/p/') ? (
+          <S.ExternalItem data-photo-preview key={id} href={slug}>
+            {content}
+          </S.ExternalItem>
+        ) : (
+          <S.Item data-photo-preview key={id} to={slug}>
+            {content}
           </S.Item>
         );
       })}

@@ -29,8 +29,8 @@ const itemStyles = (theme: Theme) => css`
   }
 `;
 
-export const Item = styled(Link)`
-  ${({ theme }) => itemStyles(theme)};
+const photoItemStyles = (theme: Theme) => css`
+  ${itemStyles(theme)};
   position: relative;
   isolation: isolate;
   @media (hover: none) and (pointer: coarse) {
@@ -38,7 +38,7 @@ export const Item = styled(Link)`
     user-select: none;
     &:active {
       z-index: 5;
-      background-color: ${({ theme }) => theme.color.gray10};
+      background-color: ${theme.color.gray10};
     }
   }
   @media (hover: hover) and (pointer: fine) {
@@ -47,6 +47,13 @@ export const Item = styled(Link)`
       z-index: 5;
     }
   }
+`;
+
+export const Item = styled(Link)`
+  ${({ theme }) => photoItemStyles(theme)};
+`;
+export const ExternalItem = styled.a`
+  ${({ theme }) => photoItemStyles(theme)};
 `;
 
 export const TopContent = styled.div`

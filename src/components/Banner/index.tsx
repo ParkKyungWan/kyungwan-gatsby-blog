@@ -1,12 +1,14 @@
 import { useTheme } from '@emotion/react';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Board, createBoard, Crop, LENS, seededRandom, PlacedSticker } from './board';
+import { Board, createBoard, LENS, seededRandom, PlacedSticker } from './board';
 import { MOBILE_MAX_WIDTH } from '@/src/styles/const';
 import { drawCoffeeBrew } from './coffee';
 import { createMagnet, moveMagnet, returnMagnet, selectMagnet, stepMagnet } from './magnet';
 import * as S from './styled';
 import { wineFeed } from './wine-feed';
+import { climbingReels } from './climbing-reels';
+import stickerMetadata from './sticker-metadata.json';
 
 const CANVAS_BLEED = 12;
 const stickers = [
@@ -14,42 +16,7 @@ const stickers = [
   { id: 'shoe', label: '암벽화' },
   { id: 'wine', label: '와인' },
   { id: 'drip', label: '드립커피' },
-];
-
-function visibleBounds(image: HTMLImageElement): (Crop & { visualWeight: number }) | undefined {
-  const buffer = document.createElement('canvas');
-  buffer.width = image.naturalWidth;
-  buffer.height = image.naturalHeight;
-  const context = buffer.getContext('2d', { willReadFrequently: true });
-  if (!context) return;
-  context.drawImage(image, 0, 0);
-  const pixels = context.getImageData(0, 0, buffer.width, buffer.height).data;
-  let left = buffer.width,
-    top = buffer.height,
-    right = -1,
-    bottom = -1;
-  let ink = 0;
-  for (let y = 0; y < buffer.height; y++)
-    for (let x = 0; x < buffer.width; x++) {
-      const offset = (y * buffer.width + x) * 4;
-      const alpha = pixels[offset + 3] / 255;
-      if (alpha <= 16 / 255) continue;
-      const luminance = (0.2126 * pixels[offset] + 0.7152 * pixels[offset + 1] + 0.0722 * pixels[offset + 2]) / 255;
-      ink += alpha * (0.35 + 0.65 * (1 - luminance));
-      left = Math.min(left, x);
-      top = Math.min(top, y);
-      right = Math.max(right, x);
-      bottom = Math.max(bottom, y);
-    }
-  if (right >= left)
-    return {
-      x: left,
-      y: top,
-      width: right - left + 1,
-      height: bottom - top + 1,
-      visualWeight: ink / ((right - left + 1) * (bottom - top + 1)),
-    };
-}
+] as const;
 
 const HomeBanner: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -71,7 +38,6 @@ const HomeBanner: React.FC = () => {
     let disposed = false;
     let frame = 0;
     let resizeFrame = 0;
-    let startTime = 0;
     let sceneDirty = true;
     let assetsReady = false;
     let board: Board | null = null;
@@ -80,18 +46,19 @@ const HomeBanner: React.FC = () => {
     if (!lensSurface) return;
     const seed = Math.floor(Math.random() * 0x100000000);
     const images = new Map<string, HTMLImageElement>();
-    const crops = new Map<string, Crop & { visualWeight: number }>();
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const mobileQuery = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`);
 
     const video = document.createElement('video');
-    video.src = '/banner/guinea-lens.mp4';
     video.muted = true;
     video.loop = true;
     video.playsInline = true;
-    video.preload = 'metadata';
+    video.preload = 'none';
     video.hidden = true;
     lensSurface.appendChild(video);
+    let activeMovie: string | null = null;
+    let movieGeneration = 0;
+    let lastReel = -1;
     let videoOpacity = 0;
     let coffeeOpacity = 0;
     let coffeeStarted = 0;
@@ -111,24 +78,17 @@ const HomeBanner: React.FC = () => {
       if (!board || disposed) return;
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
 
-      let animating = false;
       const { width, height } = board;
       // Reuse the finished sticker canvas while only the lens is moving.
       if (sceneDirty) {
         context.setTransform(ratio, 0, 0, ratio, 0, 0);
         context.clearRect(0, 0, width + CANVAS_BLEED * 2, height + CANVAS_BLEED * 2);
-        board.stickers.forEach((sticker, index) => {
+        board.stickers.forEach((sticker) => {
           const image = images.get(sticker.id);
           if (!image) return;
-          const progress = reducedMotion ? 1 : Math.max(0, Math.min(1, (time - startTime - index * 20) / 380));
-          if (progress < 1) animating = true;
-          const eased = 1 - Math.pow(1 - progress, 3);
-          // Fade and grow in place so the protected lens area stays clear during entry too.
           context.save();
           context.translate(sticker.x + CANVAS_BLEED, sticker.y + CANVAS_BLEED);
           context.rotate(sticker.rotation);
-          context.scale(0.96 + eased * 0.04, 0.96 + eased * 0.04);
-          context.globalAlpha = eased;
           context.shadowColor = 'rgba(0,0,0,0.1)';
           context.shadowBlur = 2;
           context.shadowOffsetY = 2;
@@ -146,7 +106,7 @@ const HomeBanner: React.FC = () => {
           );
           context.restore();
         });
-        sceneDirty = animating;
+        sceneDirty = false;
       }
       const diameter = lens.clientWidth;
       const zoom = LENS.zoom;
@@ -191,6 +151,25 @@ const HomeBanner: React.FC = () => {
           magnet.locked &&
           Math.hypot(magnet.locked.x - guinea.x, magnet.locked.y - guinea.y) < 1,
       );
+      const shoe = board.stickers.find((sticker) => sticker.id === 'shoe');
+      const climbingFocused = Boolean(
+        lensVisible && shoe && magnet.locked && Math.hypot(magnet.locked.x - shoe.x, magnet.locked.y - shoe.y) < 1,
+      );
+      const movieScene = climbingFocused ? 'climbing' : focused ? 'guinea' : null;
+      // A single media element owns just the focused movie; no reel is fetched on page entry.
+      if (movieScene && movieScene !== activeMovie) {
+        video.pause();
+        videoOpacity = 0;
+        videoRequested = false;
+        videoFailed = false;
+        activeMovie = movieScene;
+        movieGeneration++;
+        if (climbingFocused) {
+          const choices = climbingReels.map((_, index) => index).filter((index) => index !== lastReel);
+          lastReel = choices[Math.floor(Math.random() * choices.length)] ?? 0;
+          video.src = climbingReels[lastReel];
+        } else video.src = '/banner/guinea-lens.mp4';
+      }
       const dripper = board.stickers.find((sticker) => sticker.id === 'drip');
       const coffeeFocused = Boolean(
         lensVisible &&
@@ -226,19 +205,21 @@ const HomeBanner: React.FC = () => {
           requestDraw();
         });
       }
-      lensSurface.dataset.scene = wineFocused ? 'wine' : coffeeFocused ? 'coffee' : focused ? 'guinea' : 'magnify';
-      if (focused && !videoRequested && !videoFailed) {
+      lensSurface.dataset.scene = wineFocused ? 'wine' : coffeeFocused ? 'coffee' : movieScene ?? 'magnify';
+      if (movieScene && !videoRequested && !videoFailed) {
         videoRequested = true;
+        const generation = movieGeneration;
         video
           .play()
           .then(requestDraw)
           .catch(() => {
+            if (disposed || generation !== movieGeneration || !activeMovie) return;
             videoRequested = false;
             videoFailed = true;
             requestDraw();
           });
       }
-      const showVideo = focused && !videoFailed && !video.paused && video.readyState >= 2;
+      const showVideo = Boolean(movieScene) && !videoFailed && !video.paused && video.readyState >= 2;
       const targetOpacity = showVideo ? 1 : 0;
       const delta = previousDrawTime ? Math.min(64, time - previousDrawTime) : 16;
       previousDrawTime = time;
@@ -262,9 +243,12 @@ const HomeBanner: React.FC = () => {
         );
         lensContext.restore();
       }
-      if (!focused && videoOpacity === 0) {
+      if (!movieScene && videoOpacity === 0 && activeMovie) {
         video.pause();
-        if (videoRequested) video.currentTime = 0;
+        activeMovie = null;
+        movieGeneration++;
+        video.removeAttribute('src');
+        video.load();
         videoRequested = false;
         videoFailed = false;
       }
@@ -345,7 +329,6 @@ const HomeBanner: React.FC = () => {
       }
       if (!wineFocused && wineOpacity === 0) wineStarted = null;
       if (
-        animating ||
         moving ||
         videoOpacity !== targetOpacity ||
         (showVideo && !video.ended) ||
@@ -384,8 +367,8 @@ const HomeBanner: React.FC = () => {
               id: sticker.id,
               width: image.naturalWidth,
               height: image.naturalHeight,
-              crop: crops.get(sticker.id),
-              visualWeight: crops.get(sticker.id)?.visualWeight,
+              crop: stickerMetadata[sticker.id],
+              visualWeight: stickerMetadata[sticker.id].visualWeight,
             };
           }),
         { width, height },
@@ -490,12 +473,6 @@ const HomeBanner: React.FC = () => {
             image.onload = () => {
               if (!disposed) {
                 images.set(sticker.id, image);
-                try {
-                  const crop = visibleBounds(image);
-                  if (crop) crops.set(sticker.id, crop);
-                } catch {
-                  /* If pixel access is unavailable, retain the original image bounds. */
-                }
               }
               resolve();
             };
@@ -506,7 +483,6 @@ const HomeBanner: React.FC = () => {
     ).then(() => {
       if (disposed) return;
       assetsReady = true;
-      startTime = performance.now();
       resize();
     });
     return () => {
