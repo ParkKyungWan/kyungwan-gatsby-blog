@@ -33,7 +33,7 @@ test('complete layouts clear the lens at all widths and avoid crowding on deskto
       const board = createBoard(sources, { width, height: 160 }, seededRandom(seed));
       assert.equal(board.stickers.length, sources.length, `width=${width}, seed=${seed}`);
       for (const [i, s] of board.stickers.entries()) {
-        const dx = width * LENS.position - s.x,
+        const dx = width * LENS.position + LENS.offsetX - s.x,
           dy = 80 - s.y;
         const x = dx * Math.cos(s.rotation) + dy * Math.sin(s.rotation);
         const y = -dx * Math.sin(s.rotation) + dy * Math.cos(s.rotation);
@@ -41,7 +41,7 @@ test('complete layouts clear the lens at all widths and avoid crowding on deskto
           Math.hypot(Math.max(0, Math.abs(x) - s.width / 2), Math.max(0, Math.abs(y) - s.height / 2)) >=
             LENS.diameter * 0.4,
         );
-        assert.ok(s.x - s.bounds.width / 2 >= width * LENS.position + LENS.diameter / 2 - 8 - 1e-8);
+        assert.ok(s.x - s.bounds.width / 2 >= width * LENS.position + LENS.offsetX + LENS.diameter / 2 - 8 - 1e-8);
         assert.ok(s.x + s.bounds.width / 2 <= width + STICKER_OVERHANG + 1e-8);
         assert.ok(s.y - s.bounds.height / 2 >= -STICKER_OVERHANG - 1e-8);
         assert.ok(s.y + s.bounds.height / 2 <= 160 + STICKER_OVERHANG + 1e-8);
@@ -84,6 +84,6 @@ test('mixed photo and sticker layouts retain every asset and include print margi
       const print = board.stickers.find((s) => s.id === photo.id);
       close((print.width - 8) / (print.height - 13), photo.width / photo.height);
       assert.ok(Math.abs(print.rotation) <= 0.13);
-      assert.ok(print.x - print.bounds.width / 2 >= width * LENS.position + LENS.diameter / 2 - 8 - 1e-8);
+      assert.ok(print.x - print.bounds.width / 2 >= width * LENS.position + LENS.offsetX + LENS.diameter / 2 - 8 - 1e-8);
     }
 });

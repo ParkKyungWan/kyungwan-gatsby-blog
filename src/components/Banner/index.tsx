@@ -42,7 +42,8 @@ const HomeBanner: React.FC = () => {
     let sceneDirty = true;
     let assetsReady = false;
     let board: Board | null = null;
-    let magnet = createMagnet({ x: surface.clientWidth * LENS.position, y: surface.clientHeight / 2 });
+    let boardMobile: boolean | null = null;
+    let magnet = createMagnet({ x: surface.clientWidth * LENS.position + LENS.offsetX, y: surface.clientHeight / 2 });
     const lensSurface = lens.parentElement;
     if (!lensSurface) return;
     const seed = Math.floor(Math.random() * 0x100000000);
@@ -62,6 +63,7 @@ const HomeBanner: React.FC = () => {
     let wineStarted: number | null = null;
     const winePhotos = media.photos;
     let previousDrawTime = 0;
+    let lensScale = 1;
     let videoRequested = false;
     let videoFailed = false;
 
@@ -105,13 +107,30 @@ const HomeBanner: React.FC = () => {
         // Start the two movies and three photos only after the sticker canvas has been drawn.
         media.warm();
       }
+      const delta = previousDrawTime ? Math.min(64, time - previousDrawTime) : 16;
+      previousDrawTime = time;
       const diameter = lens.clientWidth;
-      const zoom = LENS.zoom;
+      const zoom = mobileQuery.matches ? 1.08 : LENS.zoom;
       const moving = stepMagnet(magnet, time, board.stickers, reducedMotion);
+      const scaleTarget =
+        !mobileQuery.matches &&
+        !reducedMotion &&
+        (surface.hasAttribute('data-lens-active') ||
+          Boolean(magnet.locked) ||
+          ['resist', 'pull', 'snap'].includes(magnet.phase))
+          ? 0.85
+          : 1;
+      const scaleStep = (0.15 * delta) / (scaleTarget < lensScale ? 90 : 140);
+      lensScale =
+        reducedMotion || mobileQuery.matches
+          ? 1
+          : lensScale < scaleTarget
+          ? Math.min(scaleTarget, lensScale + scaleStep)
+          : Math.max(scaleTarget, lensScale - scaleStep);
       const { x: centerX, y: centerY } = magnet.position;
-      lensSurface.style.transform = `translate(-50%, -50%) translate3d(${centerX - width * LENS.position}px, ${
-        centerY - height / 2
-      }px, 0)`;
+      lensSurface.style.transform = `translate(-50%, -50%) translate3d(${
+        centerX - (width * LENS.position + LENS.offsetX)
+      }px, ${centerY - height / 2}px, 0) scale(${lensScale})`;
       lensContext.setTransform(ratio, 0, 0, ratio, 0, 0);
       lensContext.clearRect(0, 0, diameter, diameter);
       lensContext.save();
@@ -190,8 +209,7 @@ const HomeBanner: React.FC = () => {
       }
       const showVideo = Boolean(movieScene) && !videoFailed && !video.paused && video.readyState >= 2;
       const targetOpacity = showVideo ? 1 : 0;
-      const delta = previousDrawTime ? Math.min(64, time - previousDrawTime) : 16;
-      previousDrawTime = time;
+
       videoOpacity = reducedMotion
         ? targetOpacity
         : Math.max(0, Math.min(1, videoOpacity + ((showVideo ? 1 : -1) * delta) / 80));
@@ -297,6 +315,7 @@ const HomeBanner: React.FC = () => {
       if (!wineFocused && wineOpacity === 0) wineStarted = null;
       if (
         moving ||
+        lensScale !== scaleTarget ||
         videoOpacity !== targetOpacity ||
         (showVideo && !video.ended) ||
         coffeeOpacity !== coffeeTarget ||
@@ -312,19 +331,22 @@ const HomeBanner: React.FC = () => {
       const height = surface.clientHeight;
       if (!width || !height) return;
       const nextRatio = Math.min(window.devicePixelRatio || 1, 2);
+      const mobile = mobileQuery.matches;
       if (
+        boardMobile === mobile &&
         board?.width === width &&
         board.height === height &&
         canvas.width === Math.round((width + CANVAS_BLEED * 2) * nextRatio)
       )
         return;
+      boardMobile = mobile;
       sceneDirty = true;
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round((width + CANVAS_BLEED * 2) * ratio);
       canvas.height = Math.round((height + CANVAS_BLEED * 2) * ratio);
       lens.width = Math.round(lens.clientWidth * ratio);
       lens.height = Math.round(lens.clientHeight * ratio);
-      magnet = createMagnet({ x: width * LENS.position, y: height / 2 });
+      magnet = createMagnet({ x: width * LENS.position + LENS.offsetX, y: height / 2 });
       board = createBoard(
         stickers
           .filter((sticker) => images.has(sticker.id))
@@ -340,12 +362,17 @@ const HomeBanner: React.FC = () => {
           }),
         { width, height },
         seededRandom(seed),
-        mobileQuery.matches,
+        mobile,
         true,
       );
       surface.removeAttribute('data-mobile-selected');
-      setMobileStickers(mobileQuery.matches ? board.stickers : []);
-      requestDraw();
+      surface.removeAttribute('data-lens-active');
+      setMobileStickers(mobile ? board.stickers : []);
+      // Changing canvas dimensions clears its pixels. Repaint in this same frame
+      // so the browser never presents the empty resized canvas.
+      cancelAnimationFrame(frame);
+      frame = 0;
+      draw(performance.now());
     };
     selectStickerRef.current = (id) => {
       const sticker = board?.stickers.find((item) => item.id === id);
@@ -355,7 +382,7 @@ const HomeBanner: React.FC = () => {
       selectMagnet(magnet, sticker, performance.now(), entry);
       if (entry) {
         lensSurface.style.transform = `translate(-50%, -50%) translate3d(${
-          entry.x - board!.width * LENS.position
+          entry.x - (board!.width * LENS.position + LENS.offsetX)
         }px, 0, 0)`;
       }
       surface.setAttribute('data-mobile-selected', 'true');
@@ -373,13 +400,13 @@ const HomeBanner: React.FC = () => {
         },
         performance.now(),
       );
-      if (magnet.phase !== 'idle') requestDraw();
+      requestDraw();
     };
     const onPointerLeave = () => {
       surface.removeAttribute('data-lens-active');
       if (mobileQuery.matches) return;
       if (!board) return;
-      returnMagnet(magnet, { x: board.width * LENS.position, y: board.height / 2 }, performance.now());
+      returnMagnet(magnet, { x: board.width * LENS.position + LENS.offsetX, y: board.height / 2 }, performance.now());
       requestDraw();
     };
     const releaseLens = () => {
@@ -390,7 +417,7 @@ const HomeBanner: React.FC = () => {
         return;
       surface.removeAttribute('data-lens-active');
       surface.removeAttribute('data-mobile-selected');
-      returnMagnet(magnet, { x: board.width * LENS.position, y: board.height / 2 }, performance.now());
+      returnMagnet(magnet, { x: board.width * LENS.position + LENS.offsetX, y: board.height / 2 }, performance.now());
       requestDraw();
     };
     const onOutsidePointer = (event: MouseEvent | PointerEvent) => {
@@ -425,6 +452,7 @@ const HomeBanner: React.FC = () => {
     const observer = new ResizeObserver(requestResize);
     observer.observe(surface);
     window.addEventListener('resize', requestResize);
+    mobileQuery.addEventListener('change', requestResize);
     Promise.all(
       stickers.map(
         (sticker) =>
@@ -459,6 +487,7 @@ const HomeBanner: React.FC = () => {
       surface.removeEventListener('pointerleave', onPointerLeave);
       surface.removeEventListener('pointercancel', onPointerLeave);
       window.removeEventListener('resize', requestResize);
+      mobileQuery.removeEventListener('change', requestResize);
       document.removeEventListener('pointerdown', onOutsidePointer, true);
       document.removeEventListener('click', onOutsidePointer, true);
       document.removeEventListener('focusin', onOutsideFocus, true);

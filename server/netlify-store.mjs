@@ -10,6 +10,7 @@ export function writerStore() {
   };
   return {
     read: (key) => read(key, 'json'),
+    delete: (key) => blobs.delete(key),
     readText: (key) => read(key, 'text'),
     readBinary: async (key) => {
       const value = await read(key, 'arrayBuffer');

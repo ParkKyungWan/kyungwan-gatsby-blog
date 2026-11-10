@@ -117,7 +117,7 @@ export function createGitRepository({ env = process.env, fetcher = fetch } = {})
   async function publication(id, knownState = null) {
     const state = knownState || (await snapshot());
     const entry = (await registry(state)).posts[id];
-    if (!entry) return null;
+    if (!entry || entry.deleted) return null;
     const sha = await latestCommit(state, entry.slug);
     let status = 'pending';
     try {
@@ -167,6 +167,41 @@ export function createGitRepository({ env = process.env, fetcher = fetch } = {})
       return posts.sort((a, b) => String(b.date).localeCompare(String(a.date)));
     },
     publication,
+    async deletePublished(id) {
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const state = await snapshot();
+        const index = await registry(state);
+        const previous = index.posts[id];
+        if (!previous) return { gitDeleted: false };
+        if (previous.deleted) return { gitDeleted: true };
+        const directory = folder(state, previous.slug);
+        if (directory && directory.sha !== previous.treeSha)
+          throw failure('Git에서 이 글이 변경됐어요. 최신 글을 다시 불러온 뒤 발행하고 삭제해 주세요.');
+        index.posts[id] = { ...previous, deleted: true };
+        const receipt = await api('/git/blobs', 'POST', {
+          content: JSON.stringify(index, null, 2) + '\n',
+          encoding: 'utf-8',
+        });
+        const tree = await api('/git/trees', 'POST', {
+          base_tree: state.tree,
+          tree: [
+            ...(directory ? [{ path: `content/${previous.slug}`, mode: '040000', type: 'tree', sha: null }] : []),
+            { path: REGISTRY, mode: '100644', type: 'blob', sha: receipt.sha },
+          ],
+        });
+        const commit = await api('/git/commits', 'POST', {
+          message: `Delete post ${previous.slug} (draft ${id})`,
+          tree: tree.sha,
+          parents: [state.sha],
+        });
+        try {
+          await api('/git/refs/heads/main', 'PATCH', { sha: commit.sha, force: false });
+          return { gitDeleted: true };
+        } catch (error) {
+          if (error.status !== 409 || attempt === 3) throw error;
+        }
+      }
+    },
     async publish({ id, revision, files, origin = null, draft = false }) {
       if (!writable) throw failure('서버에 WRITE_GITHUB_TOKEN을 설정해 주세요.', 503);
       const names = Object.keys(files).sort();
@@ -179,6 +214,7 @@ export function createGitRepository({ env = process.env, fetcher = fetch } = {})
         const state = await snapshot();
         const index = await registry(state);
         const previous = index.posts[id];
+        if (previous?.deleted) throw failure('삭제된 글이에요. 새 글로 작성해 주세요.', 410);
         if (previous?.revision > revision) throw failure('더 최신 초안이 이미 발행됐어요. 다시 불러와 주세요.');
         if (previous?.revision === revision && previous.hash === hash && previous.draft === draft)
           return publication(id, state);

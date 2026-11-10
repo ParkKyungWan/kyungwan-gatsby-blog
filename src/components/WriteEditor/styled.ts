@@ -201,6 +201,7 @@ export const EditorSurface = styled.div`
   }
   .format-bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 4px;
     border-bottom: 1px solid var(--line);
@@ -218,6 +219,36 @@ export const EditorSurface = styled.div`
     color: var(--ink);
     background: var(--soft);
   }
+  .floating-text-effect {
+    position: fixed;
+    right: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    z-index: 1200;
+    min-height: 48px;
+    max-width: 160px;
+    padding: 12px 16px;
+    font: inherit;
+    font-weight: 500;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 5px 22px #00000020;
+    cursor: pointer;
+  }
+  @media (max-width: 768px) {
+    .floating-text-effect {
+      right: 16px;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px) + var(--writer-keyboard-inset, 0px));
+      font-size: 16px;
+    }
+  }
+  .motion-replay {
+    display: block;
+    margin: 12px auto 24px;
+    padding: 12px 22px;
+    border: 1px solid var(--line);
+  }
   .format-bar .outline-toggle {
     display: none;
     margin-left: auto;
@@ -230,6 +261,7 @@ export const EditorSurface = styled.div`
     overflow-wrap: anywhere;
   }
   .block {
+    --first-line-height: 31.2px;
     position: relative;
     margin: 3px 0;
     scroll-margin-top: 110px;
@@ -270,6 +302,15 @@ export const EditorSurface = styled.div`
     font-weight: 500;
     line-height: 1.6;
     letter-spacing: -0.03em;
+  }
+  .h1-block {
+    --first-line-height: 43.4px;
+  }
+  .h2-block {
+    --first-line-height: 36.8px;
+  }
+  .h3-block {
+    --first-line-height: 30.4px;
   }
   .h1-block,
   .h2-block,
@@ -333,7 +374,7 @@ export const EditorSurface = styled.div`
     position: absolute;
     right: 100%;
     margin-right: 6px;
-    top: 5px;
+    top: calc(4px + var(--first-line-height) / 2 - 20.5px);
     display: flex;
     gap: 0;
     opacity: 0;
@@ -347,6 +388,8 @@ export const EditorSurface = styled.div`
   .block-handle summary {
     width: 32px;
     height: 41px;
+    padding: 0;
+    line-height: 1;
     display: grid;
     place-items: center;
     font-size: 23px;
@@ -516,6 +559,11 @@ export const EditorSurface = styled.div`
     padding: 8px;
     color: var(--muted);
   }
+  .draft-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
   .draft-list {
     max-height: 240px;
     overflow-y: auto;
@@ -677,6 +725,15 @@ export const EditorSurface = styled.div`
     }
     .block-handle summary {
       width: 27px;
+    }
+    .h1-block {
+      --first-line-height: 38.75px;
+    }
+    .h2-block {
+      --first-line-height: 33.6px;
+    }
+    .h3-block {
+      --first-line-height: 28.8px;
     }
     .editable.h1,
     .preview h1 {

@@ -1,4 +1,4 @@
-export const LENS = { diameter: 184, position: 0.22, zoom: 1.28 };
+export const LENS = { diameter: 176, position: 0.22, offsetX: -18, zoom: 1.28 };
 
 export const STICKER_OVERHANG = 8;
 export const STICKER_AREA_SCALE = 0.5 * (5 / 6) ** 2 * 0.85 ** 2;
@@ -20,7 +20,7 @@ export function seededRandom(initialSeed: number): () => number {
 
 // Distance from the lens center to the closest point on the rotated image rectangle.
 function clearsLens(sticker: PlacedSticker, viewport: Size): boolean {
-  const dx = viewport.width * LENS.position - sticker.x;
+  const dx = viewport.width * LENS.position + LENS.offsetX - sticker.x;
   const dy = viewport.height / 2 - sticker.y;
   const cos = Math.cos(sticker.rotation);
   const sin = Math.sin(sticker.rotation);
@@ -114,7 +114,7 @@ export function createBoard(
   // Resolve sizes and angles once, so resizing with the same seed preserves each sticker's character.
   const templates = shuffled.map((source) => {
     const sizeVariation = random();
-    const longest = (106 + sizeVariation * 24) * Math.sqrt(STICKER_AREA_SCALE) * (mobile ? 1.18 : compact ? 1.4 : 1.15);
+    const longest = (106 + sizeVariation * 24) * Math.sqrt(STICKER_AREA_SCALE) * (compact ? 1.4 : 1.15);
     const scale =
       source.kind === 'photo'
         ? (130 - 13) / (source.crop?.height ?? source.height)
@@ -134,13 +134,13 @@ export function createBoard(
     };
   });
   if (compact) {
-    const laneStart = mobile ? 0 : viewport.width * LENS.position + LENS.diameter / 2 + 12;
+    const laneStart = mobile ? 0 : viewport.width * LENS.position + LENS.offsetX + LENS.diameter / 2 + 12;
     const laneWidth =
       (mobile ? viewport.width : Math.min(420, viewport.width - laneStart - 8)) / Math.max(1, templates.length);
     return {
       ...viewport,
       stickers: templates.map((template, index) => {
-        const scale = Math.min(1.04, (laneWidth - 6) / template.bounds.width);
+        const scale = Math.min(1.04, (laneWidth - 6) / template.bounds.width) * (mobile ? 0.94 : 1);
         const bounds = { width: template.bounds.width * scale, height: template.bounds.height * scale };
         const insetY = bounds.height / 2 + 10;
         return {
@@ -180,7 +180,7 @@ export function createBoard(
       // Photo collections use the whole notebook; the lens floats over the photos.
       const left = fullWidth
         ? template.bounds.width / 2 - STICKER_OVERHANG
-        : Math.max(viewport.width * 0.45, viewport.width * LENS.position + LENS.diameter / 2 - 8) +
+        : Math.max(viewport.width * 0.45, viewport.width * LENS.position + LENS.offsetX + LENS.diameter / 2 - 8) +
           template.bounds.width / 2;
       const top = template.bounds.height / 2 - STICKER_OVERHANG;
       const spanX = Math.max(0, viewport.width * 0.95 - template.bounds.width / 2 + STICKER_OVERHANG - left);

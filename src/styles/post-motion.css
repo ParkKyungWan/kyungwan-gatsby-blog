@@ -1,0 +1,263 @@
+[data-post-motion] {
+  cursor: pointer;
+}
+[data-post-motion]:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+[data-post-motion='photo'],
+[data-post-motion='wiggle'] {
+  transform-origin: 50% 50%;
+}
+[data-post-motion='wiggle'] {
+  display: inline-block;
+}
+[data-post-motion='highlight'],
+[data-post-motion='underline'] {
+  background-repeat: no-repeat;
+  background-position: left 88%;
+  background-size: 0% 100%;
+  background-image: linear-gradient(transparent, transparent);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+[data-post-motion='highlight'] {
+  --motion-ink: rgba(248, 204, 70, 0.42);
+  padding: 1px 2px;
+  background-position: left center;
+}
+[data-post-motion='underline'] {
+  --motion-ink: currentColor;
+  background-position: left bottom;
+}
+[data-post-motion='highlight'].motion-done {
+  background-image: linear-gradient(var(--motion-ink), var(--motion-ink));
+  background-size: 100% 100%;
+}
+[data-post-motion='underline'].motion-running,
+[data-post-motion='underline'].motion-done {
+  font-weight: 700;
+}
+[data-post-motion='underline'].motion-done {
+  background-image: linear-gradient(var(--motion-ink), var(--motion-ink));
+  background-size: 100% 2px;
+}
+[data-post-motion='photo'].motion-running {
+  animation: post-photo-sway 480ms ease-in-out both;
+}
+[data-post-motion='wiggle'].motion-running {
+  font-weight: 700;
+  animation: post-word-wiggle 820ms ease-in-out both;
+}
+[data-post-motion='highlight'].motion-running {
+  background-image: linear-gradient(var(--motion-ink), var(--motion-ink));
+  animation: post-marker 850ms ease-out both;
+}
+[data-post-motion='underline'].motion-running {
+  background-image: linear-gradient(var(--motion-ink), var(--motion-ink));
+  animation: post-underline 750ms ease-out both;
+}
+@keyframes post-photo-sway {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-0.8deg);
+  }
+  65% {
+    transform: rotate(0.65deg);
+  }
+}
+@keyframes post-word-wiggle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0);
+  }
+  14% {
+    transform: scale(1.045) rotate(0);
+  }
+  23%,
+  39%,
+  55% {
+    transform: scale(1.045) rotate(-0.65deg);
+  }
+  31%,
+  47%,
+  63% {
+    transform: scale(1.045) rotate(0.65deg);
+  }
+  76% {
+    transform: scale(1.02) rotate(-0.2deg);
+  }
+  88% {
+    transform: scale(1.008) rotate(0.1deg);
+  }
+}
+@keyframes post-marker {
+  from {
+    background-size: 0% 100%;
+  }
+  to {
+    background-size: 100% 100%;
+  }
+}
+@keyframes post-underline {
+  from {
+    background-size: 0% 2px;
+  }
+  to {
+    background-size: 100% 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-post-motion].motion-running {
+    animation: none !important;
+  }
+  [data-post-motion='highlight'] {
+    background-image: linear-gradient(var(--motion-ink), var(--motion-ink));
+    background-size: 100% 100%;
+  }
+  [data-post-motion='underline'] {
+    font-weight: 700;
+    background-image: linear-gradient(var(--motion-ink), var(--motion-ink));
+    background-size: 100% 2px;
+  }
+}
+
+[data-post-motion='wave-slow'].motion-running,
+[data-post-motion='wave-fast'].motion-running {
+  font-weight: 700;
+  animation: post-wave-clock var(--wave-duration) linear both;
+}
+.motion-letter {
+  position: relative;
+  display: inline-block;
+}
+[data-post-motion='wave-slow'].motion-running .motion-letter {
+  animation: post-wave-staccato 130ms ease-out both;
+  animation-delay: calc(var(--wave-order) * var(--wave-step));
+}
+[data-post-motion='wave-fast'].motion-running .motion-letter {
+  animation: post-wave-letter 300ms ease-in-out both;
+  animation-delay: calc(var(--wave-order) * var(--wave-step));
+}
+@keyframes post-wave-letter {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(-0.24em);
+  }
+}
+@keyframes post-wave-clock {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-post-motion] .motion-letter {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+@keyframes post-wave-staccato {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  14% {
+    transform: translateY(-0.13em);
+  }
+  35%,
+  48% {
+    transform: translateY(-0.3em);
+  }
+  78% {
+    transform: translateY(0);
+  }
+}
+
+[data-post-motion='photo-fly'] {
+  position: relative;
+  display: flow-root;
+  isolation: isolate;
+  margin: 24px 0;
+}
+[data-post-motion='photo-fly'] > p {
+  margin: 0 !important;
+}
+[data-post-motion='photo-fly'].motion-running {
+  animation: post-wave-clock 620ms linear both;
+}
+[data-post-motion='photo-fly'].motion-gone > * {
+  visibility: hidden;
+}
+[data-post-motion='photo-fly'].motion-gone::before {
+  content: '';
+  position: absolute;
+  left: var(--photo-left);
+  top: var(--photo-top);
+  width: var(--photo-width);
+  height: var(--photo-height);
+  background: var(--motion-wall, #fff);
+  border-radius: 0;
+  box-shadow: inset 2px 2px 3px var(--motion-wall-shadow, #bfbfbf),
+    inset -1px -1px 2px var(--motion-wall-light, #fff);
+  pointer-events: none;
+}
+[data-post-motion='photo-fly'].motion-gone::after {
+  content: '폐기된 사진입니다.';
+  position: absolute;
+  left: calc(var(--photo-left) + var(--photo-width) / 2);
+  top: calc(var(--photo-top) + var(--photo-height) / 2);
+  transform: translate(-50%, -50%);
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.post-photo-flight-viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10000;
+}
+.post-photo-flight {
+  position: absolute;
+  z-index: 10000;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  animation: post-photo-kick 620ms linear both;
+}
+.post-photo-flight > canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+@keyframes post-photo-kick {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  18% {
+    transform: translate3d(0, -22px, 0) rotate(3deg) scale(1.025);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.3);
+  }
+  100% {
+    transform: translate3d(var(--flight-x), var(--flight-y), 0) rotate(-34deg) scale(0.96);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-photo-flight {
+    display: none;
+  }
+}

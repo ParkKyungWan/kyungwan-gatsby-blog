@@ -1,3 +1,4 @@
+import { renderInline } from '../../shared/inline-markdown.mjs';
 import { Block } from '../components/WriteEditor/model';
 export const escapeHTML = (text = '') =>
   String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -14,7 +15,7 @@ export function renderBlocks(blocks: Block[]) {
       html += '</ul>';
       list = false;
     }
-    const text = escapeHTML(block.text).replace(/\n/g, '<br>');
+    const text = renderInline(block.text);
     if (block.type === 'bullet') {
       if (!list) {
         html += '<ul>';
@@ -24,7 +25,8 @@ export function renderBlocks(blocks: Block[]) {
     } else if (/^h[123]$/.test(block.type))
       html += `<${block.type} id="section-${escapeHTML(block.id)}">${text}</${block.type}>`;
     else if (block.type === 'divider') html += '<hr>';
-    else if (block.type === 'image')
+    else if (block.type === 'image') {
+      if (block.motion) html += `<div data-post-motion="${block.motion === '날리기' ? 'photo-fly' : 'photo'}">`;
       html += `<p><span class="gatsby-resp-image-wrapper"${
         block.width && block.height
           ? ` style="aspect-ratio:${block.width}/${block.height};max-width:${block.width}px"`
@@ -34,7 +36,8 @@ export function renderBlocks(blocks: Block[]) {
       )}" alt="${escapeHTML(block.alt || block.text || '첨부 사진')}" loading="lazy" decoding="async"></span>${
         text ? `<em>${text}</em>` : ''
       }</p>`;
-    else if (block.type === 'quote') html += `<blockquote><p>${text || '<br>'}</p></blockquote>`;
+      if (block.motion) html += '</div>';
+    } else if (block.type === 'quote') html += `<blockquote><p>${text || '<br>'}</p></blockquote>`;
     else html += `<p>${text || '<br>'}</p>`;
   }
   return html + (list ? '</ul>' : '');

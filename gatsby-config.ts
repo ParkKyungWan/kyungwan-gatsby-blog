@@ -111,6 +111,7 @@ const config: GatsbyConfig = {
       resolve: `gatsby-transformer-remark`,
       options: {
         plugins: [
+          { resolve: `${__dirname}/plugins/gatsby-remark-post-motion` },
           {
             resolve: `gatsby-remark-images`,
             options: {
