@@ -4,7 +4,7 @@ const manifest = require('../package.json');
 const lock = require('../package-lock.json');
 
 test('all Gatsby Sharp dependencies use the pinned npm binary distribution', () => {
-  const version = manifest.devDependencies.sharp;
+  const version = manifest.dependencies.sharp || manifest.devDependencies.sharp;
   assert.equal(manifest.overrides.sharp, '$sharp');
   const entries = Object.entries(lock.packages).filter(([name]) => name.endsWith('/sharp'));
   assert.ok(entries.length > 0);

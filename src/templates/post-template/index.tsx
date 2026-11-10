@@ -1,15 +1,11 @@
 import { graphql } from 'gatsby';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
-import PostHeader from '@/src/components/PostHeader';
-import PostNavigator from '@/src/components/PostNavigator';
+import PostArticle from '@/src/components/PostArticle';
 import Seo from '@/src/components/Seo';
 import Layout from '@/src/layout';
 import PostClass from '@/src/models/post';
 import { Post } from '@/src/type';
-import { recoverMarkdownImages } from '@/src/utils/recover-markdown-images';
-
-import * as S from './styled';
 
 type PostTemplateProps = {
   location: Location;
@@ -20,21 +16,11 @@ const PostTemplate: React.FC<PostTemplateProps> = ({ location, data }) => {
   const curPost = new PostClass(data.cur);
   const prevPost = data.prev && new PostClass(data.prev);
   const nextPost = data.next && new PostClass(data.next);
-  const markdownRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (markdownRef.current) return recoverMarkdownImages(markdownRef.current);
-  }, [curPost.html]);
 
   return (
     <Layout location={location}>
       <Seo title={`ruddhks.my | ${curPost?.title}`} description={curPost?.excerpt} pathname={curPost.slug} article />
-      <S.Wrapper>
-        <PostHeader post={curPost} />
-        <S.PostContent>
-          <div ref={markdownRef} className='markdown' dangerouslySetInnerHTML={{ __html: curPost.html }} />
-        </S.PostContent>
-        <PostNavigator prevPost={prevPost} nextPost={nextPost} />
-      </S.Wrapper>
+      <PostArticle liveNavigation post={curPost} prevPost={prevPost} nextPost={nextPost} />
     </Layout>
   );
 };

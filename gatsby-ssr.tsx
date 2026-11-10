@@ -4,9 +4,14 @@ import { ThemeManagerProvider } from './src/context/theme';
 import SiteFonts from './src/components/SiteFonts';
 import { RenderBodyArgs } from 'gatsby';
 
-export const onRenderBody = ({ setHtmlAttributes, setHeadComponents }: RenderBodyArgs) => {
+export const onRenderBody = ({ pathname, setHtmlAttributes, setHeadComponents }: RenderBodyArgs) => {
   setHtmlAttributes({ lang: `ko` });
   setHeadComponents([
+    ...(pathname === '/'
+      ? ['guinea', 'shoe', 'wine', 'drip'].map((id) => (
+          <link key={`sticker-${id}`} rel='preload' as='image' href={`/banner/${id}.png`} />
+        ))
+      : []),
     ...['Medium', 'Bold', 'Light'].map((weight) => (
       <link
         key={`gmarket-${weight}`}

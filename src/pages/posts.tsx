@@ -6,6 +6,7 @@ import PostList from '../components/PostList';
 import Section from '../components/Section';
 import Seo from '../components/Seo';
 import usePostsFilter from '../hooks/usePostsFilter';
+import usePublishedPosts from '../hooks/usePublishedPosts';
 import Layout from '../layout';
 import PostClass from '../models/post';
 import { AllMarkdownRemark } from '../type';
@@ -19,7 +20,11 @@ type PostsProps = {
 };
 
 const Posts: React.FC<PostsProps> = ({ location, data }) => {
-  const posts = data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node));
+  const {
+    posts,
+    error: postsError,
+    retry: retryPosts,
+  } = usePublishedPosts(data.allMarkdownRemark.edges.map(({ node }) => new PostClass(node)));
   const { categories, filteredPosts, selectedCategory, handleCategoryClick } = usePostsFilter(posts);
 
   return (
@@ -38,6 +43,11 @@ const Posts: React.FC<PostsProps> = ({ location, data }) => {
           selectedCategory={selectedCategory}
           onCategoryClick={handleCategoryClick}
         />
+        {postsError && (
+          <p role='status'>
+            새 글을 불러오지 못했어요. <button onClick={retryPosts}>다시 불러오기</button>
+          </p>
+        )}
         <PostList posts={filteredPosts} />
       </Section>
     </Layout>

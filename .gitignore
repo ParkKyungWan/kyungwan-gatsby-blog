@@ -70,3 +70,13 @@ yarn-error.log
 
 # TypeScript incremental cache
 *.tsbuildinfo
+
+# Private local writing data
+.writer-data/
+
+# Generated shared post renderers
+server/generated/
+static/published/
+
+# Local writer migration backups (private content)
+.writer-data-backups/

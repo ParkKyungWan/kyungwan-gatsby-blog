@@ -12,7 +12,7 @@ const config: GatsbyConfig = {
     `gatsby-plugin-typescript`,
     `gatsby-plugin-emotion`,
     `gatsby-plugin-image`,
-    `gatsby-plugin-sitemap`,
+    { resolve: 'gatsby-plugin-sitemap', options: { excludes: ['/write', '/write/'] } },
     `gatsby-plugin-offline`,
     `gatsby-plugin-react-helmet`,
     `gatsby-plugin-sass`,

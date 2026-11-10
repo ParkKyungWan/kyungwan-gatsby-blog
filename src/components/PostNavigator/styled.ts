@@ -37,8 +37,8 @@ const cardStyle = (theme: Theme) => css`
   }
 `;
 
-export const PostCard = styled(Link)`
-  ${({ theme }) => cardStyle(theme)};
+const postCardStyle = (theme: Theme) => css`
+  ${cardStyle(theme)};
   position: relative;
   isolation: isolate;
   @media (hover: none) and (pointer: coarse) {
@@ -47,7 +47,7 @@ export const PostCard = styled(Link)`
     user-select: none;
     &:active {
       z-index: 5;
-      background-color: ${({ theme }) => theme.color.gray20};
+      background-color: ${theme.color.gray20};
     }
   }
   @media (hover: hover) and (pointer: fine) {
@@ -56,6 +56,12 @@ export const PostCard = styled(Link)`
       z-index: 5;
     }
   }
+`;
+export const PostCard = styled(Link)`
+  ${({ theme }) => postCardStyle(theme)};
+`;
+export const NativePostCard = styled.a`
+  ${({ theme }) => postCardStyle(theme)};
 `;
 export const EmptyCard = styled.div(({ theme }) => [
   cardStyle(theme),
