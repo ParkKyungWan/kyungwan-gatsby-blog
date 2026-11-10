@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { deleteStoredDraft } from './draft-deletion.mjs';
 import { createGitRepository, frontmatter, safeName, failure } from './git-repository.mjs';
 import { assembleBundle, storeDraft, fileURL } from './draft-bundles.mjs';
 const ID = /^[a-zA-Z0-9-]{1,100}$/;
@@ -171,7 +172,7 @@ function createWriter({
         const bundle = await repository.readBundle(slug);
         const id = bundle.writerId || `git-${slug}`;
         const previous = await store.read(`drafts/${id}`);
-        if (previous && !input.replace) return response(previous.data);
+        if (previous && !previous.data.deleted && !input.replace) return response(previous.data);
         const markdown = bundle.files['index.md'].toString('utf8');
         const { data } = frontmatter(markdown);
         const files = {};
@@ -204,7 +205,7 @@ function createWriter({
         const values = await Promise.all((await store.list('drafts/')).map((key) => store.read(key)));
         return response(
           values
-            .filter(Boolean)
+            .filter((value) => value && !value.data.deleted)
             .map(({ data: d }) => ({ id: d.id, title: d.title, category: d.category, updatedAt: d.updatedAt }))
             .sort((a, b) => b.updatedAt - a.updatedAt),
         );
@@ -213,6 +214,12 @@ function createWriter({
       if (draftMatch) {
         const id = draftMatch[1];
         const previous = await store.read(`drafts/${id}`);
+        if (request.method === 'DELETE') {
+          const input = await readJSON();
+          return response(await deleteStoredDraft(store, id, input.revision ?? 0, repository));
+        }
+        if (previous?.data.deleted)
+          throw failure('삭제된 초안이에요. 새 글을 만들거나 Git에서 다시 불러와 주세요.', 410);
         if (request.method === 'GET')
           return previous ? response(previous.data) : response({ error: '글을 찾을 수 없어요.' }, 404);
         if (request.method === 'PUT') {
@@ -252,7 +259,7 @@ function createWriter({
         if (request.method === 'POST' && publicationMatch[2] !== 'publication') {
           const input = await readJSON();
           const saved = await store.read(`drafts/${id}`);
-          if (!saved) throw failure('먼저 글을 저장해 주세요.', 404);
+          if (!saved || saved.data.deleted) throw failure('먼저 글을 저장해 주세요.', 404);
           if (input.revision !== saved.data.revision) throw failure('다른 탭에서 글이 변경됐어요. 다시 불러와 주세요.');
           const hidden = publicationMatch[2] === 'unpublish';
           if (hidden && !saved.data.origin && !saved.data.publication) throw failure('발행한 글이 없어요.', 400);
@@ -282,6 +289,7 @@ function createWriter({
       const uploadMatch = route.match(/^drafts\/([a-zA-Z0-9-]{1,100})\/images$/);
       if (uploadMatch && request.method === 'POST') {
         const id = uploadMatch[1];
+        if ((await store.read(`drafts/${id}`))?.data.deleted) throw failure('삭제된 초안이에요.', 410);
         const image = Buffer.from(await request.arrayBuffer());
         if (image.length > MAX_BODY) throw failure('사진을 더 작게 변환해 주세요.', 413);
         const { default: sharp } = await import('sharp');
@@ -309,6 +317,11 @@ function createWriter({
           written = await store.write(`draft-assets/${id}`, { ...current?.data, [name]: key }, current?.etag);
         }
         if (!written) throw failure('사진 저장이 겹쳤어요. 다시 첨부해 주세요.');
+        if ((await store.read(`drafts/${id}`))?.data.deleted) {
+          await store.delete(key);
+          await store.delete(`draft-assets/${id}`);
+          throw failure('삭제된 초안이에요.', 410);
+        }
         return response({ src: fileURL(id, name), width: info.width, height: info.height }, 201);
       }
       const imageMatch = route.match(/^drafts\/([a-zA-Z0-9-]{1,100})\/files\/(.+)$/);
@@ -322,6 +335,7 @@ function createWriter({
         if (!safeName(name) || name === 'index.md') throw failure('파일 경로를 확인해 주세요.', 400);
         const draft = await store.read(`drafts/${imageMatch[1]}`);
         const assets = await store.read(`draft-assets/${imageMatch[1]}`);
+        if (draft?.data.deleted) throw failure('삭제된 초안이에요.', 410);
         const key = draft?.data.files?.[name] || assets?.data[name];
         const image = key ? await store.readBinary(key) : null;
         const type = /\.png$/i.test(name)

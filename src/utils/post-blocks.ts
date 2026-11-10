@@ -1,3 +1,4 @@
+import { renderInline } from '../../shared/inline-markdown.mjs';
 import { Block } from '../components/WriteEditor/model';
 export const escapeHTML = (text = '') =>
   String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -14,7 +15,7 @@ export function renderBlocks(blocks: Block[]) {
       html += '</ul>';
       list = false;
     }
-    const text = escapeHTML(block.text).replace(/\n/g, '<br>');
+    const text = renderInline(block.text);
     if (block.type === 'bullet') {
       if (!list) {
         html += '<ul>';

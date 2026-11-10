@@ -48,6 +48,17 @@ export function saveDraft(draft: Draft): Promise<Draft> {
   queue = task.catch(() => {});
   return task;
 }
+export function deleteDraft(id: string): Promise<{ deleted: boolean; gitDeleted: boolean }> {
+  const task = queue.then(async () => {
+    const result = await api<{ deleted: boolean; gitDeleted: boolean }>(`drafts/${id}`, 'DELETE', {
+      revision: revisions.get(id) ?? 0,
+    });
+    revisions.delete(id);
+    return result;
+  });
+  queue = task.catch(() => {});
+  return task;
+}
 export function publishDraft(draft: Draft): Promise<Publication> {
   return api<Publication>(`drafts/${draft.id}/publish`, 'POST', {
     revision: revisions.get(draft.id) ?? draft.revision ?? 0,

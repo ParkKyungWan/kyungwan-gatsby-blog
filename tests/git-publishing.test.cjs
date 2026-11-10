@@ -208,3 +208,45 @@ test('unfinished Markdown autosaves byte-for-byte even when its Frontmatter is t
   await f.call('drafts/new-post/publish', 'POST', { revision: saved.revision }, 400);
   assert.equal(f.remote.pushes, 0);
 });
+
+test('one delete removes only private data when no successful publication exists', async (t) => {
+  const f = await fixture(t);
+  const saved = await f.call('drafts/new-post', 'PUT', f.draft);
+  const imported = await f.call('posts/1/import', 'POST', {}, 201);
+  await f.store.writeBinary('draft-files/new-post/assets/photo.json', Buffer.from('private'));
+  await f.call('drafts/new-post', 'DELETE', { revision: 0 }, 409);
+  const result = await f.call('drafts/new-post', 'DELETE', { revision: saved.revision });
+  assert.equal(result.gitDeleted, false);
+  assert.equal(f.remote.pushes, 0);
+  assert.ok(f.remote.read('content/1/index.md'));
+  assert.deepEqual(await f.store.list('draft-files/new-post/'), []);
+  assert.equal((await f.call('drafts')).length, 1);
+  await f.call('drafts/new-post', 'PUT', saved, 410);
+  await f.call('drafts/new-post', 'GET', undefined, 410);
+  assert.equal((await f.call('drafts/' + imported.id)).id, imported.id);
+});
+test('published delete commits folder removal to main and retries without duplicate commits', async (t) => {
+  const f = await fixture(t);
+  const saved = await f.call('drafts/new-post', 'PUT', f.draft);
+  await f.call('drafts/new-post/publish', 'POST', { revision: saved.revision });
+  f.remote.race = (remote) => remote.edit('README.md', 'concurrent');
+  const result = await f.call('drafts/new-post', 'DELETE', { revision: saved.revision });
+  assert.equal(result.gitDeleted, true);
+  assert.equal(f.remote.read('content/3/index.md'), null);
+  assert.ok(f.remote.read('content/1/index.md'));
+  assert.equal(f.remote.read('README.md').toString(), 'concurrent');
+  assert.equal(f.remote.pushes, 2);
+  await f.call('drafts/new-post', 'DELETE', { revision: saved.revision });
+  assert.equal(f.remote.pushes, 2);
+  assert.deepEqual(await f.call('drafts'), []);
+  assert.equal(await f.call('drafts/new-post/publication'), null);
+});
+test('Git deletion conflict preserves the private draft for recovery', async (t) => {
+  const f = await fixture(t);
+  const saved = await f.call('drafts/new-post', 'PUT', f.draft);
+  await f.call('drafts/new-post/publish', 'POST', { revision: saved.revision });
+  f.remote.edit('content/3/index.md', markdown('external'));
+  await f.call('drafts/new-post', 'DELETE', { revision: saved.revision }, 409);
+  assert.equal((await f.call('drafts/new-post')).title, saved.title);
+  assert.match(f.remote.read('content/3/index.md').toString(), /external/);
+});

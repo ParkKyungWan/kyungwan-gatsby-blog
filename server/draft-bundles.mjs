@@ -1,3 +1,4 @@
+import { serializeInline } from '../shared/inline-markdown.mjs';
 import crypto from 'node:crypto';
 import * as yaml from 'js-yaml';
 import { unified } from 'unified';
@@ -11,7 +12,7 @@ const escaped = (value = '') =>
     .replace(/>/g, '&gt;')
     .replace(/([\\`*_[\]{}()#+.!|>~-])/g, '\\$1');
 const text = (value = '') =>
-  escaped(value)
+  serializeInline(value)
     .replace(/^[ \t]+|[ \t]+$/gm, (spaces) => [...spaces].map((char) => (char === '\t' ? '&#9;' : '&#32;')).join(''))
     .replace(/\n/g, '<br>');
 export const fileURL = (id, name) =>
@@ -136,7 +137,9 @@ export async function storeDraft(store, draft, previous) {
   const markdownKey = `draft-files/${draft.id}/revisions/${version}/index.md`;
   if (!(await store.writeText(markdownKey, source))) throw new Error('Could not save Markdown');
   const saved = { ...draft, markdownKey, revision: (previous?.data.revision || 0) + 1 };
-  if (!(await store.write(`drafts/${draft.id}`, saved, previous?.etag)))
+  if (!(await store.write(`drafts/${draft.id}`, saved, previous?.etag))) {
+    await store.delete(markdownKey);
     throw failure('다른 탭에서 저장한 변경이 있어요. 다시 불러와 주세요.');
+  }
   return saved;
 }

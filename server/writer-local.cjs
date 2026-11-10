@@ -42,6 +42,7 @@ function fileStore(root) {
   };
   return {
     read,
+    delete: (key) => fs.rm(filename(key, key.startsWith('draft-files/')), { force: true }),
     readBinary: (key) => readBytes(key, true),
     async readText(key) {
       const item = await readBytes(key, true);
@@ -51,7 +52,16 @@ function fileStore(root) {
     writeText: (key, data, etag) => writeBytes(key, data, etag, true),
     writeBinary: (key, data, etag) => writeBytes(key, data, etag, true),
     async list(prefix) {
-      if (!/^(drafts|draft-assets|draft-files|maintenance)\/$/.test(prefix)) throw new Error('Invalid prefix');
+      if (
+        !/^(drafts|draft-assets|draft-files|maintenance)\//.test(prefix) ||
+        !prefix.endsWith('/') ||
+        prefix
+          .slice(0, -1)
+          .split('/')
+          .some((part) => !part || part === '.' || part === '..') ||
+        /[\\\x00-\x1f]/.test(prefix)
+      )
+        throw new Error('Invalid prefix');
       const walk = async (dir, base) => {
         try {
           const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -60,7 +70,7 @@ function fileStore(root) {
               entry.isDirectory()
                 ? walk(path.join(dir, entry.name), base + entry.name + '/')
                 : entry.isFile()
-                ? [base + entry.name.replace(/\.json$/, '')]
+                ? [base + (prefix.startsWith('draft-files/') ? entry.name : entry.name.replace(/\.json$/, ''))]
                 : [],
             ),
           );

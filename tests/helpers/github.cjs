@@ -91,6 +91,7 @@ function github(initial = {}) {
       for (const entry of body.tree) {
         for (const name of Object.keys(flat))
           if (name === entry.path || name.startsWith(entry.path + '/')) delete flat[name];
+        if (entry.sha === null) continue;
         if (entry.type === 'tree')
           for (const [name, id] of Object.entries(trees.get(entry.sha))) flat[entry.path + '/' + name] = id;
         else flat[entry.path] = entry.sha;

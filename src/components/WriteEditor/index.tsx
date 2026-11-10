@@ -3,6 +3,7 @@ import { Block, BlockType, Draft, Publication, isHeading, makeBlock, makeDraft }
 import {
   DraftSummary,
   getDraft,
+  deleteDraft,
   imageBlockSource,
   listDrafts,
   login,
@@ -74,7 +75,6 @@ export default function WriteEditor() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [drafts, setDrafts] = useState<DraftSummary[]>([]);
   const [auth, setAuth] = useState<'loading' | 'ready' | 'login' | 'setup' | 'error'>('loading');
-  const [storage, setStorage] = useState('');
   const [gitConfigured, setGitConfigured] = useState(false);
   const [gitPosts, setGitPosts] = useState<GitPost[]>([]);
   const [password, setPassword] = useState('');
@@ -89,6 +89,21 @@ export default function WriteEditor() {
   const [dragging, setDragging] = useState(false);
   const [showOutline, setShowOutline] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
+  const deleting = useRef(false);
+  const publicationAlerts = useRef(new Set<string>());
+  const announcePublication = useCallback((value: Publication) => {
+    const key = `${value.commitSha}:${value.state}:${value.draft}`;
+    if (publicationAlerts.current.has(key)) return;
+    publicationAlerts.current.add(key);
+    window.alert(
+      value.state === 'failed'
+        ? '배포 실패\nGit 반영은 완료됐지만 사이트 배포에 실패했어요. 배포 로그를 확인해 주세요.'
+        : value.state === 'published'
+        ? (value.draft ? '공개 해제 완료' : '발행 완료') + '\n사이트 배포가 완료됐어요.'
+        : (value.draft ? '공개 해제 요청 성공' : '발행 요청 성공') +
+          '\nGit에 반영했어요. 사이트는 빌드·배포가 끝나면 변경됩니다.',
+    );
+  }, []);
   const [publication, setPublication] = useState<Publication | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +127,7 @@ export default function WriteEditor() {
         .then((value) => {
           if (!cancelled) {
             setPublication(value);
+            if (value && value.state !== 'pending') announcePublication(value);
             if (value?.state === 'published')
               setNotice(value.draft ? '공개 해제 배포가 완료됐어요.' : '발행이 완료됐어요.');
             else if (value?.state === 'failed')
@@ -143,7 +159,6 @@ export default function WriteEditor() {
     setAuth('loading');
     try {
       const state = await session();
-      setStorage(state.storage);
       setGitConfigured(state.gitConfigured);
       if (!state.configured) {
         setAuth('setup');
@@ -169,6 +184,7 @@ export default function WriteEditor() {
     void load();
   }, [load]);
   const persist = useCallback((snapshot: Draft): Promise<boolean> => {
+    if (deleting.current) return Promise.resolve(false);
     const pending = pendingSaves.current.get(snapshot);
     if (pending) return pending;
     if (saved.current === snapshot) return Promise.resolve(true);
@@ -226,7 +242,15 @@ export default function WriteEditor() {
         event.returnValue = '';
       }
     };
+    const closeBlockOptions = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      root.current?.querySelectorAll<HTMLDetailsElement>('details[data-block-options][open]').forEach((details) => {
+        if (!details.contains(target)) details.open = false;
+      });
+    };
     const outside = (event: PointerEvent) => {
+      closeBlockOptions(event);
       if (!(event.target as Element).closest('[data-block-menu]')) setMenu(null);
       if (!(event.target as Element).closest('[data-emoji-picker]')) setShowEmoji(false);
     };
@@ -275,11 +299,13 @@ export default function WriteEditor() {
     document.addEventListener('visibilitychange', hidden);
     window.addEventListener('beforeunload', unload);
     document.addEventListener('pointerdown', outside);
+    document.addEventListener('focusin', closeBlockOptions);
     return () => {
       document.removeEventListener('click', navigate, true);
       document.removeEventListener('visibilitychange', hidden);
       window.removeEventListener('beforeunload', unload);
       document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('focusin', closeBlockOptions);
     };
   }, [persist]);
   useEffect(() => {
@@ -512,6 +538,44 @@ export default function WriteEditor() {
       setBusy(false);
     }
   };
+  const removeSelectedDraft = async () => {
+    const selected = current.current;
+    if (!selected || busy) return;
+    if (
+      !window.confirm(
+        '선택한 글과 첨부파일을 삭제할까요? Git 발행 성공 기록이 있으면 main에서도 삭제하고, 빌드 후 사이트에서도 제거됩니다.',
+      )
+    )
+      return;
+    deleting.current = true;
+    clearTimeout(timer.current);
+    setBusy(true);
+    try {
+      const result = await deleteDraft(selected.id);
+      const remaining = await listDrafts();
+      const next = remaining.length ? await getDraft(remaining[0].id) : makeDraft();
+      saved.current = next;
+      current.current = next;
+      setDraft(next);
+      setDrafts(remaining);
+      setPublication(next.publication ?? null);
+      setActive(next.blocks[0]?.id ?? null);
+      setPreview(false);
+      setMenu(null);
+      setStatus('saved');
+      setNotice(
+        result.gitDeleted
+          ? 'Git main과 임시저장에서 삭제했어요. 빌드 후 사이트에 반영됩니다.'
+          : '임시저장 글을 삭제했어요.',
+      );
+    } catch (error) {
+      window.alert('초안 삭제 실패\n' + message(error));
+      setNotice(message(error));
+    } finally {
+      deleting.current = false;
+      setBusy(false);
+    }
+  };
   const publish = async () => {
     const snapshot = current.current;
     if (!snapshot || busy) return;
@@ -519,15 +583,21 @@ export default function WriteEditor() {
     setBusy(true);
     setNotice('');
     try {
-      if (!(await persist(snapshot))) return;
+      if (!(await persist(snapshot))) {
+        window.alert('발행 실패\n초안을 저장하지 못했어요. 화면의 저장 오류를 확인해 주세요.');
+        return;
+      }
       if (current.current !== saved.current) {
         setNotice('작성 중인 변경을 저장한 뒤 다시 발행해 주세요.');
+        window.alert('발행하지 못했어요. 작성 중인 변경을 저장한 뒤 다시 발행해 주세요.');
         return;
       }
       const result = await publishDraft(snapshot);
       setPublication(result);
+      announcePublication(result);
       setNotice('main에 반영했어요. Gatsby 빌드·배포가 끝나면 사이트에 공개됩니다.');
     } catch (error) {
+      window.alert('발행 실패\n' + message(error));
       setNotice(message(error));
     } finally {
       setBusy(false);
@@ -552,7 +622,6 @@ export default function WriteEditor() {
     return (
       <EditorSurface>
         <div className='gate'>
-          <span className='eyebrow'>WRITE / YOUR SPACE</span>
           <h1>
             {auth === 'login'
               ? '관리자 로그인'
@@ -562,7 +631,6 @@ export default function WriteEditor() {
               ? '연결을 확인해 주세요.'
               : '글을 불러오고 있어요.'}
           </h1>
-          {auth === 'login' && <p>글 작성과 관리는 로그인 후 이용할 수 있어요.</p>}
           {auth === 'login' && (
             <form
               onSubmit={async (event) => {
@@ -579,9 +647,9 @@ export default function WriteEditor() {
                 }
               }}
             >
-              <label htmlFor='writer-password'>글쓰기 비밀번호</label>
               <input
                 id='writer-password'
+                aria-label='비밀번호'
                 type='password'
                 autoComplete='current-password'
                 value={password}
@@ -589,7 +657,7 @@ export default function WriteEditor() {
                 required
               />
               <button className='primary' disabled={busy}>
-                글쓰기 시작
+                비밀번호 입력
               </button>
             </form>
           )}
@@ -670,9 +738,17 @@ export default function WriteEditor() {
                 공개 해제
               </button>
             )}
-            <button disabled={busy} onClick={() => void switchDraft()}>
-              ＋ 새 글
-            </button>
+            <div className='draft-actions'>
+              <button
+                disabled={busy || status === 'saving' || !drafts.some((item) => item.id === draft.id)}
+                onClick={() => void removeSelectedDraft()}
+              >
+                삭제
+              </button>
+              <button disabled={busy} onClick={() => void switchDraft()}>
+                ＋ 새 글
+              </button>
+            </div>
           </div>
           {drafts.length === 0 ? (
             <p className='muted'>첫 문장부터 차곡차곡 저장할게요.</p>
@@ -719,11 +795,6 @@ export default function WriteEditor() {
               </button>
             ))}
           </div>
-          <p className='storage-note'>
-            {storage === 'local-server'
-              ? '이 컴퓨터의 로컬 서버에 저장하고 있어요.'
-              : '서버에 저장되어 다른 기기에서도 이어 쓸 수 있어요.'}
-          </p>
         </section>
       )}
       {draft.markdown !== undefined ? (
@@ -1015,7 +1086,7 @@ export default function WriteEditor() {
                     >
                       ＋
                     </button>
-                    <details>
+                    <details data-block-options>
                       <summary aria-label='블록 이동 및 삭제'>⠿</summary>
                       <div className='block-options'>
                         <button disabled={!index} onClick={() => moveBlock(block.id, -1)}>

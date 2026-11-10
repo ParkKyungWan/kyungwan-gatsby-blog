@@ -26,11 +26,7 @@ export const Inner = styled.div`
 
 export const Viewport = styled.div`
   width: 100%;
-  max-width: 660px;
-
-  @media ${MOBILE_MEDIA_QUERY} {
-    max-width: none;
-  }
+  max-width: none;
   height: 160px;
   position: relative;
   overflow: visible;
@@ -55,7 +51,7 @@ export const Canvas = styled.canvas`
 
 export const Lens = styled.div`
   position: absolute;
-  left: ${LENS.position * 100}%;
+  left: calc(${LENS.position * 100}% + ${LENS.offsetX}px);
   top: 50%;
   width: ${LENS.diameter}px;
   height: ${LENS.diameter}px;
