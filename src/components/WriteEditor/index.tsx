@@ -274,14 +274,26 @@ export default function WriteEditor() {
         event.returnValue = '';
       }
     };
+    let pressingBlockOptions = false;
+    const releaseBlockOptions = () => {
+      pressingBlockOptions = false;
+    };
     const closeBlockOptions = (event: Event) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
+      // Safari can move focus to the page between touch-down and click.
+      // Let the menu action finish before reacting to that intermediate focus.
+      if (
+        event.type === 'focusin' &&
+        (pressingBlockOptions || target === document.body || target === document.documentElement)
+      )
+        return;
       root.current?.querySelectorAll<HTMLDetailsElement>('details[data-block-options][open]').forEach((details) => {
         if (!details.contains(target)) details.open = false;
       });
     };
     const outside = (event: PointerEvent) => {
+      pressingBlockOptions = event.target instanceof Element && !!event.target.closest('[data-block-options]');
       closeBlockOptions(event);
       if (!(event.target as Element).closest('[data-block-menu]')) setMenu(null);
       if (!(event.target as Element).closest('[data-emoji-picker]')) setShowEmoji(false);
@@ -332,12 +344,18 @@ export default function WriteEditor() {
     window.addEventListener('beforeunload', unload);
     document.addEventListener('pointerdown', outside);
     document.addEventListener('focusin', closeBlockOptions);
+    document.addEventListener('click', releaseBlockOptions);
+    document.addEventListener('pointercancel', releaseBlockOptions);
+    document.addEventListener('keydown', releaseBlockOptions);
     return () => {
       document.removeEventListener('click', navigate, true);
       document.removeEventListener('visibilitychange', hidden);
       window.removeEventListener('beforeunload', unload);
       document.removeEventListener('pointerdown', outside);
       document.removeEventListener('focusin', closeBlockOptions);
+      document.removeEventListener('click', releaseBlockOptions);
+      document.removeEventListener('pointercancel', releaseBlockOptions);
+      document.removeEventListener('keydown', releaseBlockOptions);
     };
   }, [persist]);
   useEffect(() => {
