@@ -40,7 +40,7 @@
     [data-post-motion='underline'],
     [data-post-motion='wave-slow'],
     [data-post-motion='wave-fast']
-  ):is(.motion-running, .motion-done) {
+  ) {
   font-weight: 700;
 }
 [data-post-motion='underline'].motion-done {
