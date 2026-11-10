@@ -9,6 +9,7 @@ import * as S from './styled';
 import { wineFeed } from './wine-feed';
 import { climbingReels } from './climbing-reels';
 import stickerMetadata from './sticker-metadata.json';
+import { createLensMedia } from './media';
 
 const CANVAS_BLEED = 12;
 const stickers = [
@@ -49,23 +50,17 @@ const HomeBanner: React.FC = () => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const mobileQuery = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`);
 
-    const video = document.createElement('video');
-    video.muted = true;
-    video.loop = true;
-    video.playsInline = true;
-    video.preload = 'none';
-    video.hidden = true;
-    lensSurface.appendChild(video);
-    let activeMovie: string | null = null;
+    const media = createLensMedia({ climbingReels, winePhotos: wineFeed, onReady: () => requestDraw() });
+    for (const player of Object.values(media.videos)) lensSurface.appendChild(player);
+    let video = media.videos.guinea;
+    let activeMovie: 'guinea' | 'climbing' | null = null;
     let movieGeneration = 0;
-    let lastReel = -1;
     let videoOpacity = 0;
     let coffeeOpacity = 0;
     let coffeeStarted = 0;
     let wineOpacity = 0;
     let wineStarted: number | null = null;
-    let wineRequested = false;
-    let winePhotos: HTMLImageElement[] = [];
+    const winePhotos = media.photos;
     let previousDrawTime = 0;
     let videoRequested = false;
     let videoFailed = false;
@@ -107,6 +102,8 @@ const HomeBanner: React.FC = () => {
           context.restore();
         });
         sceneDirty = false;
+        // Start the two movies and three photos only after the sticker canvas has been drawn.
+        media.warm();
       }
       const diameter = lens.clientWidth;
       const zoom = LENS.zoom;
@@ -156,19 +153,14 @@ const HomeBanner: React.FC = () => {
         lensVisible && shoe && magnet.locked && Math.hypot(magnet.locked.x - shoe.x, magnet.locked.y - shoe.y) < 1,
       );
       const movieScene = climbingFocused ? 'climbing' : focused ? 'guinea' : null;
-      // A single media element owns just the focused movie; no reel is fetched on page entry.
       if (movieScene && movieScene !== activeMovie) {
         video.pause();
+        video = media.videos[movieScene];
         videoOpacity = 0;
         videoRequested = false;
-        videoFailed = false;
+        videoFailed = Boolean(video.error);
         activeMovie = movieScene;
         movieGeneration++;
-        if (climbingFocused) {
-          const choices = climbingReels.map((_, index) => index).filter((index) => index !== lastReel);
-          lastReel = choices[Math.floor(Math.random() * choices.length)] ?? 0;
-          video.src = climbingReels[lastReel];
-        } else video.src = '/banner/guinea-lens.mp4';
       }
       const dripper = board.stickers.find((sticker) => sticker.id === 'drip');
       const coffeeFocused = Boolean(
@@ -182,29 +174,6 @@ const HomeBanner: React.FC = () => {
       const wineFocused = Boolean(
         lensVisible && wine && magnet.locked && Math.hypot(magnet.locked.x - wine.x, magnet.locked.y - wine.y) < 1,
       );
-      if (wineFocused && !wineRequested) {
-        wineRequested = true;
-        const selection = [...wineFeed];
-        for (let i = selection.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [selection[i], selection[j]] = [selection[j], selection[i]];
-        }
-        Promise.all(
-          selection.slice(0, 3).map(
-            ({ src }) =>
-              new Promise<HTMLImageElement | null>((resolve) => {
-                const photo = new Image();
-                photo.onload = () => resolve(photo);
-                photo.onerror = () => resolve(null);
-                photo.src = src;
-              }),
-          ),
-        ).then((photos) => {
-          if (disposed) return;
-          winePhotos = photos.filter((photo): photo is HTMLImageElement => photo !== null);
-          requestDraw();
-        });
-      }
       lensSurface.dataset.scene = wineFocused ? 'wine' : coffeeFocused ? 'coffee' : movieScene ?? 'magnify';
       if (movieScene && !videoRequested && !videoFailed) {
         videoRequested = true;
@@ -225,7 +194,7 @@ const HomeBanner: React.FC = () => {
       previousDrawTime = time;
       videoOpacity = reducedMotion
         ? targetOpacity
-        : Math.max(0, Math.min(1, videoOpacity + ((showVideo ? 1 : -1) * delta) / 240));
+        : Math.max(0, Math.min(1, videoOpacity + ((showVideo ? 1 : -1) * delta) / 80));
       if (videoOpacity > 0 && video.readyState >= 2 && video.videoWidth && video.videoHeight) {
         const side = Math.min(video.videoWidth, video.videoHeight);
         lensContext.save();
@@ -247,8 +216,6 @@ const HomeBanner: React.FC = () => {
         video.pause();
         activeMovie = null;
         movieGeneration++;
-        video.removeAttribute('src');
-        video.load();
         videoRequested = false;
         videoFailed = false;
       }
@@ -443,13 +410,6 @@ const HomeBanner: React.FC = () => {
     document.addEventListener('click', onOutsidePointer, true);
     document.addEventListener('focusin', onOutsideFocus, true);
     window.addEventListener('blur', releaseLens);
-    video.addEventListener('loadeddata', requestDraw);
-    video.addEventListener('playing', requestDraw);
-    const onVideoError = () => {
-      videoFailed = true;
-      requestDraw();
-    };
-    video.addEventListener('error', onVideoError);
     surface.addEventListener('pointerenter', onPointerMove);
     surface.addEventListener('pointermove', onPointerMove);
     surface.addEventListener('pointerleave', onPointerLeave);
@@ -487,13 +447,7 @@ const HomeBanner: React.FC = () => {
     });
     return () => {
       disposed = true;
-      video.pause();
-      video.removeEventListener('loadeddata', requestDraw);
-      video.removeEventListener('playing', requestDraw);
-      video.removeEventListener('error', onVideoError);
-      video.removeAttribute('src');
-      video.load();
-      video.remove();
+      media.dispose();
       redrawRef.current = () => {};
       selectStickerRef.current = () => {};
       cancelAnimationFrame(frame);
