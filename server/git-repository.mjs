@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { githubFailure } from './github-api-errors.mjs';
 import matter from 'gray-matter';
 import * as yaml from 'js-yaml';
 const REGISTRY = '.writer/publications.json';
@@ -26,10 +27,11 @@ async function batched(values, action) {
   return output;
 }
 export function createGitRepository({ env = process.env, fetcher = fetch } = {}) {
-  const repository = env.WRITE_GITHUB_REPOSITORY || 'ParkKyungWan/kyungwan-gatsby-blog';
+  const repository = env.WRITE_GITHUB_REPOSITORY?.trim() || 'ParkKyungWan/kyungwan-gatsby-blog';
+  const token = env.WRITE_GITHUB_TOKEN?.trim();
   if (!/^[\w.-]+\/[\w.-]+$/.test(repository)) throw failure('Git 저장소 설정을 확인해 주세요.', 503);
   const base = `https://api.github.com/repos/${repository}`;
-  const writable = Boolean(env.WRITE_GITHUB_TOKEN);
+  const writable = Boolean(token);
   async function api(path, method = 'GET', body) {
     if (method !== 'GET' && !writable) throw failure('서버에 WRITE_GITHUB_TOKEN을 설정해 주세요.', 503);
     const result = await fetcher(base + path, {
@@ -37,16 +39,33 @@ export function createGitRepository({ env = process.env, fetcher = fetch } = {})
       headers: {
         'Accept': 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
-        ...(env.WRITE_GITHUB_TOKEN ? { Authorization: `Bearer ${env.WRITE_GITHUB_TOKEN}` } : {}),
+        'User-Agent': 'kyungwan-gatsby-writer',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: AbortSignal.timeout(20000),
     });
     if (!result.ok) {
-      if (result.status === 409 || result.status === 422) throw failure('main이 변경됐어요. 다시 발행해 주세요.');
-      if (result.status === 404) throw failure('Git 저장소나 글을 찾지 못했어요.', 404);
-      throw failure('GitHub 요청에 실패했어요. 서버 권한과 연결을 확인해 주세요.', 502);
+      const details = await result.json().catch(() => ({}));
+      const requestId = result.headers
+        .get('x-github-request-id')
+        ?.replace(/[^a-zA-Z0-9:-]/g, '')
+        .slice(0, 80);
+      console.error('GitHub request rejected', {
+        status: result.status,
+        method,
+        endpoint: path.split('?')[0],
+        requestId,
+      });
+      throw githubFailure({
+        status: result.status,
+        method,
+        path,
+        message: String(details.message || ''),
+        remaining: result.headers.get('x-ratelimit-remaining'),
+        requestId,
+      });
     }
     return result.json();
   }
