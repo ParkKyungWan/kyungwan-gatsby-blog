@@ -1,14 +1,5 @@
 {
   "version": 1,
   "nextId": 4,
-  "posts": {
-    "mwaiby0m-nxhk7k74": {
-      "slug": "3",
-      "revision": 20,
-      "hash": "0d85a497b171cd41e6267c93defc97c69b3e301975fc69e6d634e2b864ca9bae",
-      "treeSha": "b10c7b4ab287e805ac26bcf91c20afed4b4e7aaf",
-      "publishedAt": 1794236400000,
-      "draft": true
-    }
-  }
+  "posts": {}
 }
