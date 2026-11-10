@@ -1,5 +1,14 @@
 {
   "version": 1,
-  "nextId": 4,
-  "posts": {}
+  "nextId": 5,
+  "posts": {
+    "mwaj1oov-0r2fouiu": {
+      "slug": "4",
+      "revision": 398,
+      "hash": "3cea221a4fdf283074be58d16ab3016491cd34839602e7ff4441ccf3733ad43a",
+      "treeSha": "3d8efa2eb8a9b905e953a055e6e98fbb4e6c3594",
+      "publishedAt": 1794236400000,
+      "draft": false
+    }
+  }
 }
