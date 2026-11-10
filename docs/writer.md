@@ -49,3 +49,37 @@ Loopback and explicitly allowlisted hosts in `.writer-data/allowed-hosts.json` r
 The owner explicitly approved deleting all former drafts, photos and published snapshots. On the first authenticated request after this change, the Netlify adapter empties the retired `writer-content` store and records completion in `writer-drafts/maintenance/legacy-reset`. Subsequent requests leave the new store intact. The local adapter similarly clears the retired local data directories once, retaining allowed-host configuration. Anonymous requests cannot trigger the reset.
 
 The old `/api/posts`, `/p/<id>/`, runtime renderer bundles and migration scripts are removed. No migration or redirects for the discarded publications are provided. Existing Gatsby Markdown articles and their addresses remain intact.
+
+## Article effects
+
+Effects are saved in Markdown, not in a separate position-based database. Inline syntax:
+
+```md
+{{흔들:짧은 문구}}
+{{형광펜:**중요한 내용**과 [링크](https://example.com)}}
+{{밑줄:기억할 문장}}
+{{느린파도:왼쪽부터 톡 톡 톡}}
+{{빠른파도:왼쪽부터 촤라라락}}
+```
+
+Select a phrase within one editor block and use the “문구 효과” selector to insert these markers. Select the phrase inside its markers to replace/remove the effect. Nested effects and manual line breaks inside markers are not supported; automatic responsive line wrapping is supported. Incomplete/unknown markers remain readable text. Existing inline bold and links continue to work. The source editor preserves Markdown byte-for-byte and offers a safe Markdown preview; raw HTML is displayed literally in that preview, while Gatsby retains its existing HTML handling.
+
+Photos use a standalone marker immediately before the existing Markdown image:
+
+```md
+<!-- motion:살랑 -->
+
+![설명](./photo.webp)
+
+<!-- motion:날리기 -->
+
+![날리기 사진](./photo.webp)
+```
+
+The photo block's ⠿ menu toggles this effect. Native Gatsby image optimization remains enabled. The shared `post-effects.cjs` parser is used by the preview and the local Gatsby Remark plugin. Code and link URLs are not interpreted as effect markers.
+
+Effects automatically become eligible at 55% of viewport height and play in document order, one at a time. A later eligible effect waits for earlier effects. At the bottom of the actual scroll container, remaining effects are made eligible and drain in document order. Completed effects stop being observed; scrolling back does not replay them. Clicking an effect or using Enter/Space replays it when the queue is idle; links retain navigation. Preview has an “효과 다시 보기” control. Reduced-motion preferences show final highlighting without movement. Unavailable JavaScript/observer support never hides article content. Highlight/underline use a small local background paint for multiline support; photo/word movement uses transforms.
+
+Wave effects wrap graphemes (including joined emoji) rather than UTF-16 code units. Each selection is limited to 200 code points; oversized markers remain literal and produce an editor warning. Slow waves use a 130ms short hop every 170ms, with the entire selected phrase bold during playback; fast waves use a bounded stagger and the sequential queue waits for the full wave duration. Word wiggle becomes bold only during playback and slightly enlarges, trembles around the center, and settles back; underline remains bold after playback. Highlight padding is 1px vertically and 2px horizontally.
+
+Flying photos become eligible immediately at a separate 15%-height trigger, with no extra delay. They still wait for the previous effect to finish. Bottom flush drains them in the same document order. The original image and its layout box are retained; a one-time canvas snapshot of the decoded image flies inside a fixed clipped overlay. A theme-matched soft neumorphic recess replaces the visible image without collapsing the slot. Click/Enter/Space restores the photo, and another activation replays it. Reduced-motion and missing/unloaded images keep the original photo visible. Desktop internal scrolling and mobile document scrolling are both supported. No extra storage service or animation library is required.

@@ -31,7 +31,9 @@ export function serializeDraft(draft) {
     .map((block) => {
       if (block.type === 'image') {
         const name = decodeURIComponent(block.src.slice(fileURL(draft.id, '').length));
-        return `![${escaped(block.alt || '')}](<./${name}>)${block.text ? `\n\n*${text(block.text)}*` : ''}`;
+        return `${block.motion ? `<!-- motion:${block.motion} -->\n\n` : ''}![${escaped(
+          block.alt || '',
+        )}](<./${name}>)${block.text ? `\n\n*${text(block.text)}*` : ''}`;
       }
       if (/^h[123]$/.test(block.type)) return `${'#'.repeat(Number(block.type[1]))} ${text(block.text)}`;
       if (block.type === 'divider') return '---';

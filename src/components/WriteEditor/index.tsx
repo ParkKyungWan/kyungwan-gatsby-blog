@@ -1,3 +1,6 @@
+import { attachKeyboardDock } from './keyboard-dock';
+import { renderMarkdownDocument } from '../../../shared/document-preview.mjs';
+import { diagnostics, unwrapEffects } from '../../../shared/post-effects.cjs';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Block, BlockType, Draft, Publication, isHeading, makeBlock, makeDraft } from './model';
 import {
@@ -144,6 +147,35 @@ export default function WriteEditor() {
   const fileInput = useRef<HTMLInputElement>(null);
   const titleInput = useRef<HTMLTextAreaElement>(null);
   const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (auth !== 'ready' || !root.current) return;
+    return attachKeyboardDock(root.current);
+  }, [auth, preview, draft?.id]);
+  const effectSelection = useRef<{ id: string; start: number; end: number; text: string } | null>(null);
+  useEffect(() => {
+    const remember = () => {
+      const selection = window.getSelection();
+      if (!selection?.rangeCount || selection.isCollapsed) return;
+      const range = selection.getRangeAt(0);
+      const parent =
+        range.startContainer.nodeType === Node.ELEMENT_NODE
+          ? (range.startContainer as Element)
+          : range.startContainer.parentElement;
+      const editor = parent?.closest<HTMLElement>('[data-edit-id]');
+      if (!editor || !root.current?.contains(editor) || !editor.contains(range.endContainer)) return;
+      const prefix = range.cloneRange();
+      prefix.selectNodeContents(editor);
+      prefix.setEnd(range.startContainer, range.startOffset);
+      effectSelection.current = {
+        id: editor.dataset.editId!,
+        start: prefix.toString().length,
+        end: prefix.toString().length + range.toString().length,
+        text: range.toString(),
+      };
+    };
+    document.addEventListener('selectionchange', remember);
+    return () => document.removeEventListener('selectionchange', remember);
+  }, []);
   const current = useRef(draft);
   current.current = draft;
   const saved = useRef<Draft | null>(null);
@@ -667,6 +699,36 @@ export default function WriteEditor() {
         </div>
       </EditorSurface>
     );
+  const applyEffect = (effect: string) => {
+    const selected = effectSelection.current;
+    const block = selected && draft.blocks.find((block) => block.id === selected.id);
+    if (!selected || !block || block.text.slice(selected.start, selected.end) !== selected.text) {
+      setNotice('효과를 적용할 문구를 한 블록 안에서 드래그해 주세요.');
+      return;
+    }
+    let start = selected.start,
+      end = selected.end;
+    const prefix = block.text.slice(0, start).match(/\{\{(?:흔들|형광펜|밑줄|느린파도|빠른파도):$/);
+    if (prefix && block.text.slice(end, end + 2) === '}}') {
+      start -= prefix[0].length;
+      end += 2;
+    }
+    const content = unwrapEffects(block.text.slice(start, end));
+    if (content.includes('{{') || content.includes('}}') || content.includes('\n')) {
+      setNotice('효과는 중첩 없이 한 줄의 문구를 선택해 주세요.');
+      return;
+    }
+    if (effect.includes('파도') && Array.from(content).length > 200) {
+      setNotice('파도 효과는 200자 이내로 선택해 주세요.');
+      return;
+    }
+    const replacement = effect === '없음' ? content : `{{${effect}:${content}}}`;
+    updateBlock(block.id, { text: block.text.slice(0, start) + replacement + block.text.slice(end) });
+    effectSelection.current = null;
+    setNotice(effect === '없음' ? '효과를 해제했어요.' : '효과를 지정했어요. 미리보기에서 확인하세요.');
+    focus(block.id, start + replacement.length);
+  };
+  const effectWarnings = diagnostics(draft.markdown ?? draft.blocks.map((block) => block.text).join('\n'));
   const headings = draft.blocks.filter((block) => isHeading(block) && block.text.trim());
   const activeBlock = draft.blocks.find((block) => block.id === active);
   return (
@@ -692,6 +754,24 @@ export default function WriteEditor() {
         if (!preview) void attach(event.dataTransfer.files);
       }}
     >
+      {!preview && draft.markdown === undefined && (
+        <select
+          className='floating-text-effect'
+          aria-label='선택한 문구 효과'
+          value=''
+          disabled={busy}
+          onChange={(event) => applyEffect(event.target.value)}
+        >
+          <option value='' disabled>
+            문구 효과
+          </option>
+          {['흔들', '형광펜', '밑줄', '느린파도', '빠른파도', '없음'].map((effect) => (
+            <option key={effect} value={effect}>
+              {effect === '없음' ? '효과 해제' : effect}
+            </option>
+          ))}
+        </select>
+      )}
       <header className='writer-bar'>
         <div className='bar-actions'>
           <button onClick={() => setShowDrafts(!showDrafts)} aria-expanded={showDrafts} disabled={busy}>
@@ -704,13 +784,7 @@ export default function WriteEditor() {
             }}
             aria-pressed={preview}
           >
-            {draft.markdown !== undefined
-              ? preview
-                ? '원문 편집'
-                : '원문 읽기'
-              : preview
-              ? '이어서 쓰기'
-              : '미리보기'}
+            {draft.markdown !== undefined ? (preview ? '원문 편집' : '미리보기') : preview ? '이어서 쓰기' : '미리보기'}
           </button>
           <button
             disabled={busy || status === 'saving'}
@@ -797,6 +871,19 @@ export default function WriteEditor() {
           </div>
         </section>
       )}
+      {effectWarnings.length > 0 && (
+        <p role='status' className='storage-note'>
+          {effectWarnings.join(' ')}
+        </p>
+      )}
+      {preview && (
+        <button
+          className='motion-replay'
+          onClick={() => root.current?.querySelector('.markdown')?.dispatchEvent(new Event('post-motion-replay'))}
+        >
+          효과 다시 보기
+        </button>
+      )}
       {draft.markdown !== undefined ? (
         <section className='source-editor'>
           <div className='panel-heading'>
@@ -824,13 +911,43 @@ export default function WriteEditor() {
           <p className='storage-note'>
             기존 문법과 Frontmatter를 원문 그대로 보존합니다. 사진은 아래 파일명을 상대 경로로 참조하세요.
           </p>
-          <textarea
-            aria-label='Markdown 원문'
-            value={draft.markdown}
-            readOnly={busy || preview}
-            onChange={(event) => change((value) => ({ ...value, markdown: event.target.value }))}
-            spellCheck={false}
-          />
+          {preview ? (
+            <PostArticle
+              post={
+                new PostClass({
+                  id: draft.id,
+                  excerpt: '',
+                  html: renderMarkdownDocument(draft.markdown, (url: string) => {
+                    let name: string;
+                    try {
+                      name = decodeURIComponent(url.replace(/^\.\//, ''));
+                    } catch {
+                      return '';
+                    }
+                    return draft.files?.[name]
+                      ? `/api/write/drafts/${draft.id}/files/${name.split('/').map(encodeURIComponent).join('/')}`
+                      : url;
+                  }),
+                  fields: { slug: publication?.slug || '/write/' },
+                  frontmatter: {
+                    title: draft.title || '제목 없는 글',
+                    author: 'KyungWan',
+                    emoji: draft.emoji || '📝',
+                    categories: draft.category ? [draft.category] : [],
+                    date: new Date(draft.updatedAt).toLocaleDateString('sv-SE'),
+                  },
+                })
+              }
+            />
+          ) : (
+            <textarea
+              aria-label='Markdown 원문'
+              value={draft.markdown}
+              readOnly={busy || preview}
+              onChange={(event) => change((value) => ({ ...value, markdown: event.target.value }))}
+              spellCheck={false}
+            />
+          )}
           <div className='source-files'>
             {Object.keys(draft.files || {}).map((name) => (
               <a
@@ -1095,6 +1212,26 @@ export default function WriteEditor() {
                         <button disabled={index === draft.blocks.length - 1} onClick={() => moveBlock(block.id, 1)}>
                           아래로 이동
                         </button>
+                        {block.type === 'image' && (
+                          <button
+                            onClick={(event) => {
+                              updateBlock(block.id, { motion: block.motion === '살랑' ? undefined : '살랑' });
+                              event.currentTarget.closest('details')?.removeAttribute('open');
+                            }}
+                          >
+                            {block.motion === '살랑' ? '살랑 효과 해제' : '사진 살랑 효과'}
+                          </button>
+                        )}
+                        {block.type === 'image' && (
+                          <button
+                            onClick={(event) => {
+                              updateBlock(block.id, { motion: block.motion === '날리기' ? undefined : '날리기' });
+                              event.currentTarget.closest('details')?.removeAttribute('open');
+                            }}
+                          >
+                            {block.motion === '날리기' ? '날리기 효과 해제' : '사진 날리기 효과'}
+                          </button>
+                        )}
                         <button onClick={() => removeBlock(block.id)}>블록 삭제</button>
                       </div>
                     </details>
@@ -1102,6 +1239,7 @@ export default function WriteEditor() {
                 )}
                 {block.type === 'image' ? (
                   <figure>
+                    {block.motion && <span className='storage-note'>사진 효과 · {block.motion}</span>}
                     <img
                       src={block.src}
                       width={block.width}

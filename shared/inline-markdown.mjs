@@ -1,3 +1,4 @@
+import effects from './post-effects.cjs';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 const parser = unified().use(remarkParse);
@@ -7,12 +8,19 @@ const literal = (value = '') => html(value).replace(/([\\`*_[\]{}()#+.!|>~-])/g,
 const safeURL = (value) => /^(https?:\/\/|mailto:|#|\/(?!\/)|\.\.?\/)/i.test(value) && !/[\x00-\x20<>]/.test(value);
 function convert(value, format) {
   const source = String(value || '');
-  const tree = parser.parse(source);
+  const tree = effects.applyTextEffects(parser.parse(source));
   const plain = (value) =>
     format === 'html' ? html(value).replace(/\n/g, '<br>') : literal(value).replace(/\n/g, '<br>');
   function render(node) {
-    const raw = source.slice(node.position.start.offset, node.position.end.offset);
+    const raw = node.position ? source.slice(node.position.start.offset, node.position.end.offset) : node.value || '';
     const children = () => (node.children || []).map(render).join('');
+    if (node.type === 'motion-letter') return format === 'html' ? effects.letterTag(node) : literal(node.value);
+    if (node.type === 'motion') {
+      const name = Object.keys(effects.textEffects).find((key) => effects.textEffects[key] === node.effect);
+      return format === 'html'
+        ? effects.openTag(node.effect, node) + children() + '</span>'
+        : '{{' + name + ':' + children() + '}}';
+    }
     if (node.type === 'text') return plain(node.value);
     if (node.type === 'strong') return format === 'html' ? `<strong>${children()}</strong>` : `**${children()}**`;
     if (node.type === 'emphasis') return format === 'html' ? `<em>${children()}</em>` : `*${children()}*`;

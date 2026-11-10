@@ -3,6 +3,7 @@ export type Block = {
   id: string;
   type: BlockType;
   text: string;
+  motion?: '살랑' | '날리기';
   src?: string;
   alt?: string;
   width?: number;

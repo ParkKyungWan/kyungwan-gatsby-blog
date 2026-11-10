@@ -201,6 +201,7 @@ export const EditorSurface = styled.div`
   }
   .format-bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 4px;
     border-bottom: 1px solid var(--line);
@@ -217,6 +218,36 @@ export const EditorSurface = styled.div`
   .format-bar button[aria-pressed='true'] {
     color: var(--ink);
     background: var(--soft);
+  }
+  .floating-text-effect {
+    position: fixed;
+    right: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    z-index: 1200;
+    min-height: 48px;
+    max-width: 160px;
+    padding: 12px 16px;
+    font: inherit;
+    font-weight: 500;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 5px 22px #00000020;
+    cursor: pointer;
+  }
+  @media (max-width: 768px) {
+    .floating-text-effect {
+      right: 16px;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px) + var(--writer-keyboard-inset, 0px));
+      font-size: 16px;
+    }
+  }
+  .motion-replay {
+    display: block;
+    margin: 12px auto 24px;
+    padding: 12px 22px;
+    border: 1px solid var(--line);
   }
   .format-bar .outline-toggle {
     display: none;

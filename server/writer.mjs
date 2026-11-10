@@ -58,6 +58,8 @@ function validateDraft(input, id) {
     ids.add(b.id);
     const block = { id: b.id, type: b.type, text: b.text };
     if (b.type === 'image') {
+      if (b.motion !== undefined && !['살랑', '날리기'].includes(b.motion)) return null;
+      if (b.motion) block.motion = b.motion;
       if (typeof b.src !== 'string' || !b.src.startsWith(fileURL(id, ''))) return null;
       let name;
       try {

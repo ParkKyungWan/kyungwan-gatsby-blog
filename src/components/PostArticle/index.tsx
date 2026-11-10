@@ -1,3 +1,5 @@
+import '../../styles/post-motion.css';
+import { installPostMotion } from '../../utils/post-motion';
 import React, { useEffect, useRef } from 'react';
 import PostHeader from '../PostHeader';
 import PostNavigator from '../PostNavigator';
@@ -12,7 +14,13 @@ const PostArticle: React.FC<{
 }> = ({ post, prevPost, nextPost }) => {
   const markdownRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (markdownRef.current) return recoverMarkdownImages(markdownRef.current);
+    if (!markdownRef.current) return;
+    const recover = recoverMarkdownImages(markdownRef.current);
+    const disposeMotion = installPostMotion(markdownRef.current);
+    return () => {
+      recover?.();
+      disposeMotion();
+    };
   }, [post.html]);
   return (
     <S.Wrapper>
