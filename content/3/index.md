@@ -5,7 +5,7 @@ date: '2026-11-10'
 categories:
   - '일상'
 featured: false
-draft: false
+draft: true
 ---
 
 # 네비게이션1
